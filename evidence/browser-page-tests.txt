@@ -1,0 +1,82 @@
+PASS first view: headline and sample gauge
+PASS first view: says the table is a sample, not measured
+PASS first view: eight gates, four streams, thirty-two dots
+PASS first view: readouts match the sample
+PASS first view: boundary list has five cases, first boundary case is open in the detail line
+PASS first view: the board explains that no contract is set
+PASS first view: contract link is not faked
+PASS first view: the page title is the product name
+PASS first view: no script errors
+PASS first view: no key input anywhere, nothing stored
+PASS first view: no network call to any chain node
+PASS gate click: detail shows that case and each wording's verdict
+PASS gate click: the gate is marked open
+PASS keyboard: arrow moves to the next gate and reads it
+PASS keyboard: arrow left goes back
+PASS table: one row per wording plus the intended row, all 8 cases
+PASS table: verdicts are words, not only colours
+PASS legend lists the four wordings
+PASS moving streams are drawn
+PASS reduced motion: streams are drawn without animation
+PASS mobile: the page does not scroll sideways
+PASS mobile: the chart scrolls inside its own frame and says so
+PASS mobile: the wordmark stays on one line
+PASS mobile: the open table scrolls inside its frame, not the page
+PASS dark scheme: paper turns dark and text stays readable
+PASS composer: starts with four wordings and eight cases
+PASS composer: no problems are shown before anyone types
+PASS composer: the vague example fills every box and the page shows the id the contract will compute
+PASS composer: a complete pack shows no problems
+PASS composer: intents are carried into the radio groups
+PASS composer: the revised example changes the wordings and the id
+PASS composer: a short wording is explained in plain words and the id disappears
+PASS composer: two identical wordings are caught
+PASS composer: removing down to three hides the remove buttons
+PASS composer: five wordings is the most, and the add button goes away
+PASS composer: a new wording is empty and focused
+PASS composer: six cases is the fewest, and the remove buttons go away
+PASS composer: twelve cases is the most, and the add button goes away
+PASS composer: new cases are empty, so the page names the first one to fill
+PASS composer: label too short is explained
+PASS composer: sending is locked and says why
+PASS composer: counters say how many are allowed
+PASS board: newest first with grade and score
+PASS board: runs, time and the revision it replaces
+PASS board: the revision picker lists the measured packs
+PASS board: the contract link points to the explorer
+PASS open a pack: caption names it, its run and the pack id
+PASS open a pack: the address bar carries a link to it
+PASS open a pack: the title names the rule
+PASS open a pack: drift line says it was measured once
+PASS no revision chart for a first version
+PASS revision chart: both versions, oldest first, scores shown
+PASS open by id: a malformed id is explained
+PASS open by id: an unknown id is said to be unknown
+PASS no wallet: no write request was made
+PASS deep link: ?pack= opens that measurement on load
+PASS deep link to unreadable data: says so and falls back to the sample
+PASS unreachable node: the board says it could not read, and the sample still shows
+PASS recorded first view: a configured pack replaces the sample and the address bar is left alone
+PASS recorded first view: the repository link comes from the configuration
+PASS no wallet: connecting explains how to proceed
+PASS send: connected and complete, the button opens
+PASS send: ACCEPTED is shown as in progress
+PASS send: FINALIZED and SUCCESS is reported as recorded, and the reading opens
+PASS send: one transaction that carries our contract address, the method measure and the normalised pack
+PASS send: nothing was sent twice and nothing is left pending
+PASS send: the board is reloaded and lists the new pack
+PASS send: no script errors
+PASS send: declining in the wallet says nothing was sent and leaves no pending record
+PASS send: UNDETERMINED is 'did not settle, nothing recorded', with advice
+PASS send: FINALIZED with an error is 'the contract refused it' with the usual reasons
+PASS send: settled but nothing stored is reported as unmeasurable, not as success
+PASS send: an error after the nonce moved is ambiguous and blocks a second send
+PASS send: the pending record is kept
+PASS reload: the page says an earlier send is unconfirmed and offers to check
+PASS reload: sending stays locked while it is unresolved
+PASS reload: when the account's count shows it never went out, the record is cleared
+PASS connect: a wrong network is switched before anything else
+PASS send: if the wallet is on another network at send time, nothing is sent
+PASS no third-party requests: only localhost (fonts, scripts and styles are served by the page itself)
+
+80 passed, 0 failed

@@ -1,0 +1,56 @@
+PASS limits: wordings
+PASS limits: cases
+PASS limits: wording length
+PASS limits: case length
+PASS limits: label length
+PASS limits: pack text
+PASS id: vague refund pack
+PASS id: revised refund pack (names the first as previous)
+PASS id: non-ASCII pack (escapes as Python does)
+PASS id: spacing does not change it
+PASS id: previous is part of it
+PASS id: previous is lower-cased like the page sends it
+PASS packJson: normalised and without an empty previous
+PASS packJson: keeps previous when set
+PASS problems: both demo packs are fine
+PASS problems: empty draft lists name, wordings, cases
+PASS problems: too few wordings
+PASS problems: too many cases
+PASS problems: duplicate wordings (case-insensitive)
+PASS problems: duplicate cases
+PASS problems: bad intent
+PASS problems: bad previous
+PASS problems: control characters
+PASS problems: lengths are inclusive
+PASS problems: one character outside is caught
+PASS problems: emoji count as one character like Python
+PASS report: the sample parses
+PASS report: junk and wrong shapes are refused
+PASS report: JSON text is accepted too
+PASS percent is floored, never rounded up to a better look
+PASS grades are ordered and complete
+PASS boundary rows match the contract's list
+PASS boundary text: majority
+PASS boundary text: split and intent
+PASS boundary text: off intent
+PASS boundary rows name what each wording said
+PASS best wording line
+PASS drift line, one run and many runs
+PASS matrix rows: one per wording with every cell
+PASS time and id formatting
+PASS chart: one gate per case and one stream per wording
+PASS chart: a dot for every wording at every gate, one outlet label per wording
+PASS chart: boundary gates are marked, intent rings drawn for intended cases only
+PASS chart: crosses only where the majority missed the intent
+PASS chart: gates are keyboard reachable and named
+PASS chart: texts are escaped
+PASS chart: animation can be switched off
+PASS chart: gates are evenly spaced left to right
+PASS chart: wordings in a lane are spread but stay inside it
+PASS chart: lanes run complies, unclear, violates from the top
+PASS chart: a path starts at the inlet and visits every gate
+PASS config: a contract address is set
+PASS config: the first view is the live revised pack
+PASS id: revised refund pack equals the id the contract returned on Studionet
+
+54 passed, 0 failed

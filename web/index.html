@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rule Wind Tunnel</title>
+<meta name="description" content="Measure how steadily a model reads a rule before you build a contract on it. Four wordings, eight cases, one table of verdicts, recorded on GenLayer.">
+<link rel="icon" href="mark.svg" type="image/svg+xml">
+<link rel="stylesheet" href="style.css">
+<link rel="preload" href="fonts/bricolage-grotesque-latin-800-normal.woff2" as="font" type="font/woff2" crossorigin>
+<script src="config.js"></script>
+</head>
+<body>
+<a class="sr" href="#read">Skip to the reading</a>
+
+<header class="top">
+  <a class="mark" href="#top" aria-label="Rule Wind Tunnel, top of page">
+    <svg viewBox="0 0 34 22" aria-hidden="true" focusable="false"><g fill="none" stroke-width="2.4" stroke-linecap="round"><path d="M1 4 C12 4 12 11 20 11 S28 4 33 4" stroke="#3987e5"/><path d="M1 11 H33" stroke="#199e70"/><path d="M1 18 C12 18 12 11 20 11 S28 18 33 18" stroke="#d95926"/></g></svg>
+    Wind Tunnel
+  </a>
+  <nav aria-label="Sections">
+    <a href="#read">Reading</a>
+    <a href="#board">Board</a>
+    <a href="#measure">Measure</a>
+    <a href="#how">How it works</a>
+    <a id="nav-contract" href="#how">Contract</a>
+  </nav>
+</header>
+
+<main id="top">
+<section class="stage" aria-labelledby="h-stage">
+  <div class="wrap">
+    <div class="stage-head">
+      <h1 id="h-stage">Does your rule read the same way twice?</h1>
+      <div>
+        <p class="lede">Write one rule in four ways and give it eight cases. The validators answer every case once per wording, and you see where the readings agree and where they come apart.</p>
+        <div class="cta">
+          <a class="btn primary" href="#measure">Measure a rule</a>
+          <a class="btn" href="#board">Open a measured rule</a>
+        </div>
+      </div>
+      <div class="gauge" id="gauge" aria-live="polite"></div>
+    </div>
+  </div>
+  <figure class="tunnel" aria-label="Test section">
+    <div class="tunnel-scroll wrap-bleed" id="tunnel" tabindex="0" role="region" aria-label="Test section chart, scrolls sideways on small screens"></div>
+  </figure>
+  <div class="wrap">
+    <div class="stage-foot">
+      <div>
+        <p class="swipe">Swipe the chart sideways to see every case.</p>
+        <p class="tunnel-caption" id="tunnel-caption"></p>
+        <p class="reading-key"><b>Reading it.</b> Each gate is a case, each line a wording. The height a line crosses a gate is its verdict. Lines that stay together agree. A ring marks the verdict you intended, a shaded gate means the wordings split, and a cross under a number means the majority missed your intent.</p>
+        <p class="gate-detail" id="gate-detail" aria-live="polite">Select a gate to read its case.</p>
+      </div>
+      <ol class="key" id="key" aria-label="Wordings"></ol>
+    </div>
+  </div>
+</section>
+
+<div class="paper">
+<section class="band" id="read" aria-labelledby="h-read">
+  <div class="wrap">
+    <div class="cols">
+      <header>
+        <h2 id="h-read">What the table says</h2>
+        <p id="read-lead"></p>
+      </header>
+      <div>
+        <div class="readouts" id="readouts"></div>
+        <p class="note" id="best-line"></p>
+        <p class="note" id="drift-line"></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="band" aria-labelledby="h-boundary">
+  <div class="wrap">
+    <div class="cols">
+      <header>
+        <h2 id="h-boundary">Where it comes apart</h2>
+        <p>These are the cases to fix first. A case is on the boundary when the wordings split on it, or when the majority missed the verdict you intended.</p>
+      </header>
+      <div>
+        <ol class="boundary" id="boundary"></ol>
+        <details class="table">
+          <summary>Read the whole table</summary>
+          <div class="tablewrap"><table class="matrix" id="matrix"></table></div>
+        </details>
+        <div class="lineage" id="lineage" hidden></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="band" id="board" aria-labelledby="h-board">
+  <div class="wrap">
+    <div class="cols">
+      <header>
+        <h2 id="h-board">Measured rules</h2>
+        <p id="board-lead">Every measurement is public. Open one to see its table.</p>
+      </header>
+      <div>
+        <ul class="packs" id="packs"></ul>
+        <form class="openbyid" id="openform">
+          <label class="sr" for="openid">Pack id</label>
+          <input type="text" id="openid" placeholder="Open a rule by its 64-character id" autocomplete="off" spellcheck="false">
+          <button class="btn primary" type="submit">Open</button>
+        </form>
+        <p class="status" id="board-status" hidden></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="band" id="measure" aria-labelledby="h-measure">
+  <div class="wrap">
+    <div class="cols">
+      <header>
+        <h2 id="h-measure">Measure a rule</h2>
+        <p>Write the rule in three to five different ways, as different people would. Add six to twelve cases and say what verdict you intend for each. Leave a case open when you have no expectation.</p>
+        <p class="hint">Eight cases and four wordings is a good start: more cells make one stray answer matter less.</p>
+        <p><button class="mini" type="button" id="ex1">Fill in a vague refund rule</button><br><button class="mini" type="button" id="ex2">Fill in its revised version</button></p>
+      </header>
+      <form id="composer" novalidate>
+        <div class="field">
+          <label for="f-label">Name of the rule</label>
+          <input type="text" id="f-label" maxlength="80" autocomplete="off" placeholder="Refund rule v1">
+        </div>
+        <div class="field">
+          <label for="f-previous">Replaces an earlier measurement</label>
+          <select id="f-previous"><option value="">No, this is a first version</option></select>
+          <p class="hint" style="margin-top:8px">Pick the measured version this one revises. The board then shows whether the rule got steadier.</p>
+        </div>
+        <div class="field">
+          <span class="label">Wordings <span class="counter" id="wc"></span></span>
+          <div id="wordings"></div>
+          <button class="mini" type="button" id="addw">Add a wording</button>
+        </div>
+        <div class="field">
+          <span class="label">Cases <span class="counter" id="cc"></span></span>
+          <div id="cases"></div>
+          <button class="mini" type="button" id="addc">Add a case</button>
+        </div>
+        <ul class="problems" id="problems" aria-live="polite"></ul>
+        <p class="idline" id="idline"></p>
+        <div class="walletline">
+          <button class="btn" type="button" id="connect">Connect wallet</button>
+          <span id="account">No wallet connected.</span>
+        </div>
+        <button class="btn primary" type="submit" id="send" disabled>Measure on Studionet</button>
+        <p class="status" id="send-status" role="status" hidden></p>
+        <p class="status bad" id="recovery" hidden></p>
+      </form>
+    </div>
+  </div>
+</section>
+
+<section class="band" id="how" aria-labelledby="h-how">
+  <div class="wrap">
+    <div class="cols">
+      <header>
+        <h2 id="h-how">How the measurement works</h2>
+        <p>The contract is a single Python file. Its source, tests and a recorded run are in the repository.</p>
+        <p><a id="link-source" href="#how">Source repository</a><br><a id="link-contract" href="#how">Contract on the explorer</a></p>
+      </header>
+      <div>
+        <ol class="steps">
+          <li><div><h3>One question per wording</h3><p>Each validator asks its model, once for each wording, to say whether every case complies with the rule, violates it, or is left unclear by it. That makes a table: wordings down, cases across.</p></div></li>
+          <li><div><h3>Agreement on the table</h3><p>Each validator asks its own model; the table is accepted when the grade of the leader's table and its own grade are at most one step apart (cells may differ). A pack on which models disagree widely does not settle. The numbers below are computed from the agreed table with whole-number arithmetic.</p></div></li>
+          <li><div><h3>Consistency and fidelity</h3><p>Consistency is how often two wordings give the same verdict to the same case. Fidelity is how often the majority verdict matches what you intended. The grade comes from the lower of the two.</p></div></li>
+          <li><div><h3>A record you can point to</h3><p>The pack is stored under the hash of its text. The same pack can be measured again, up to five times, five minutes apart, so you can see how much the readings move between runs.</p></div></li>
+        </ol>
+        <h3 style="margin:36px 0 12px">What it does not tell you</h3>
+        <ul class="limits">
+          <li>A steady grade is about these cases and these wordings. A rule can read steadily here and still fail on a case you did not think of.</li>
+          <li>The model is the one the validators run. A different model, or the same model later, can read the rule differently.</li>
+          <li>It measures the reading, not whether your intent is right.</li>
+          <li>A table that sits right on a grade edge may not settle, because the validators must agree on the grade. Add cases to move it away from the edge.</li>
+          <li>Verdicts that do not follow the required format are never recorded: the measurement is reported as unmeasurable and nothing is stored.</li>
+          <li>Anyone can measure any pack. The record names who ran each measurement, not who wrote the rule.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+</div>
+</main>
+
+<footer class="foot paper">
+  <p>Rule Wind Tunnel runs on GenLayer Studionet, a test network. No funds are held or moved, and the page never asks for a key: every signature comes from your own wallet.</p>
+</footer>
+
+<noscript><p class="status bad" style="margin:24px">This page needs JavaScript to read the chain and draw the test section.</p></noscript>
+<script src="app.js"></script>
+</body>
+</html>

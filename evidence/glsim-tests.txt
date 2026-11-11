@@ -1,0 +1,28 @@
+WARNING: File `gltest.config.yaml` not found in the current directory, using default config, create a `gltest.config.yaml` file to manage multiple networks
+INFO: Clearing artifacts directory: artifacts
+INFO: Using the following configuration:
+INFO:   RPC URL: http://127.0.0.1:4000/api
+INFO:   Selected Network: localnet
+INFO:   Available networks: ['localnet', 'studionet', 'testnet_asimov', 'testnet_bradbury']
+INFO:   Selected chain type: localnet
+INFO:   Available chains: localnet, studionet, testnet_asimov, testnet_bradbury
+INFO:   Contracts directory: contracts
+INFO:   Artifacts directory: artifacts
+INFO:   Environment: .env
+INFO:   Default wait interval: 3000 ms
+INFO:   Default wait retries: 50
+INFO:   Leader only mode: False
+============================= test session starts ==============================
+platform linux -- Python 3.13.18, pytest-9.1.1, pluggy-1.6.0 -- /usr/local/bin/python3
+rootdir: /tmp/claude-0/-home-claude/992eb611-8518-5300-ba08-f4efcf68d00a/scratchpad/wt
+plugins: platformdirs-4.13.0, anyio-4.15.1, genlayer-test-0.29.2
+collecting ... collected 6 items
+
+tests/glsim/test_rule_wind_tunnel_network.py::test_a_steady_pack_is_measured_by_five_validators PASSED [ 16%]
+tests/glsim/test_rule_wind_tunnel_network.py::test_a_wobbly_pack_lists_its_boundary_cases PASSED [ 33%]
+tests/glsim/test_rule_wind_tunnel_network.py::test_a_malformed_answer_is_never_a_measurement PASSED [ 50%]
+tests/glsim/test_rule_wind_tunnel_network.py::test_a_revision_links_back_and_the_numbers_compare PASSED [ 66%]
+tests/glsim/test_rule_wind_tunnel_network.py::test_a_rerun_waits_for_the_cooldown_and_counts_drift PASSED [ 83%]
+tests/glsim/test_rule_wind_tunnel_network.py::test_a_bad_pack_is_refused_before_any_model_call PASSED [100%]
+
+============================== 6 passed in 7.79s ===============================

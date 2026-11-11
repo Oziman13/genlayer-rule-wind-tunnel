@@ -1,0 +1,44 @@
+{
+ "label": "Refund rule v2 (30 days, unused)",
+ "previous": "976df62ae598c0a1c04a07a325d5aa5e54a6697b001e357353317e68f1fcb2b3",
+ "wordings": [
+  "Approve a refund when the item reaches the seller within 30 days of delivery and has not been used.",
+  "A refund is valid only if (1) the item is back with the seller no later than 30 days after delivery and (2) it shows no signs of use.",
+  "Refund if the item is returned within 30 days of delivery and unused. Otherwise do not refund.",
+  "The buyer gets a refund when the return arrives within thirty days of the delivery date and the product is unused."
+ ],
+ "cases": [
+  {
+   "text": "Buyer returned an unopened item 3 days after delivery.",
+   "intent": "COMPLIES"
+  },
+  {
+   "text": "Buyer returned the item 12 days after delivery, unused.",
+   "intent": "COMPLIES"
+  },
+  {
+   "text": "Buyer returned the item 20 days after delivery, in the original box.",
+   "intent": "COMPLIES"
+  },
+  {
+   "text": "Buyer returned the item 31 days after delivery, unused.",
+   "intent": "VIOLATES"
+  },
+  {
+   "text": "Buyer returned the item 90 days after delivery.",
+   "intent": "VIOLATES"
+  },
+  {
+   "text": "Buyer returned a visibly worn item 5 days after delivery.",
+   "intent": "VIOLATES"
+  },
+  {
+   "text": "Buyer sent only a photo of the item 2 days after delivery and kept the item.",
+   "intent": "VIOLATES"
+  },
+  {
+   "text": "Buyer returned the item 34 days after delivery because the carrier lost the first parcel.",
+   "intent": "OPEN"
+  }
+ ]
+}

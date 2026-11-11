@@ -1,0 +1,19 @@
+{
+  "name": "genlayer-rule-wind-tunnel",
+  "version": "0.1.1",
+  "private": true,
+  "type": "module",
+  "description": "Rule Wind Tunnel: measure how steadily a model reads a rule (GenLayer Intelligent Contract and web client)",
+  "scripts": {
+    "build": "esbuild web/src/main.js --bundle --format=iife --minify --outfile=web/app.js",
+    "test": "node tests/browser/logic.test.mjs && node tests/browser/page.test.mjs"
+  },
+  "dependencies": {
+    "genlayer-js": "1.1.8",
+    "viem": "2.57.7"
+  },
+  "devDependencies": {
+    "esbuild": "0.28.2",
+    "playwright-core": "1.64.0"
+  }
+}

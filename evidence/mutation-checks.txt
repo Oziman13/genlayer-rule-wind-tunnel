@@ -1,0 +1,7 @@
+Rule Wind Tunnel v0.1.1 - mutation check of the code changed in v0.1.1 (grade-distance agreement, second model try).
+Run 2026-11-10 with scripts/mutation_check_v011.py. KILLED = the direct tests failed on the mutant.
+
+base: tests pass on the unmodified contract
+mutants: 11, killed: 11, survived: 0
+
+The 88 mutants of v0.1.0 (limits, thresholds, validation, prompt) are in mutation-checks-v0.1.0.txt; that run targeted v0.1.0 and was not repeated in full on v0.1.1.
