@@ -90,7 +90,7 @@ async function setLineage(r) {
   const y = s => T + (1 - s / 1000) * (H - T - B);
   const line = pts.map((p, i) => `${i ? "L" : "M"} ${x(i)} ${y(p.score_permille)}`).join(" ");
   const grid = [0, 550, 750, 900].map(t => `<line class="axis" x1="${L}" x2="${W - R}" y1="${y(t)}" y2="${y(t)}"/><text x="${L - 8}" y="${y(t) + 4}" text-anchor="end">${t / 10}</text>`).join("");
-  const dots = pts.map((p, i) => `<circle class="pt${i === pts.length - 1 ? " now" : ""}" cx="${x(i)}" cy="${y(p.score_permille)}" r="6"/><text class="lab" x="${x(i)}" y="${y(p.score_permille) - 14}" text-anchor="middle">${Math.floor(p.score_permille / 10)}</text><text x="${x(i)}" y="${H - 22}" text-anchor="middle">${esc(p.label.length > 24 ? p.label.slice(0, 23) + "…" : p.label)}</text>`).join("");
+  const dots = pts.map((p, i) => `<circle class="pt${i === pts.length - 1 ? " now" : ""}" cx="${x(i)}" cy="${y(p.score_permille)}" r="6"/><text class="lab" x="${x(i)}" y="${y(p.score_permille) - 14}" text-anchor="middle">${Math.floor(p.score_permille / 10)}</text><text x="${x(i)}" y="${H - 22}" text-anchor="${pts.length > 1 && i === 0 ? "start" : pts.length > 1 && i === pts.length - 1 ? "end" : "middle"}">${esc(p.label.length > 24 ? p.label.slice(0, 23) + "…" : p.label)}</text>`).join("");
   box.innerHTML = `<h3>Revisions of this rule</h3><p class="hint">Score of each version, oldest first. Lines at 55, 75 and 90 mark the grade edges.</p>
     <svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Scores of ${pts.length} versions: ${pts.map(p => esc(p.label) + " " + Math.floor(p.score_permille / 10)).join(", ")}">${grid}<path class="trace" d="${line}"/>${dots}</svg>`;
   box.hidden = false;
