@@ -54,8 +54,8 @@ function setReadouts(r) {
     ? "Read it on the sample, then measure your own rule."
     : `${r.pack.cases.length} cases put to ${r.pack.wordings.length} wordings: ${r.pack.wordings.length * r.pack.cases.length} verdicts in all.`;
   $("readouts").innerHTML = `
-    <div class="readout"><div class="big num">${pct(rep.consistency_permille)}</div><div class="name">Consistency</div><p>How often two wordings give the same case the same verdict.</p></div>
-    <div class="readout"><div class="big num">${pct(rep.fidelity_permille)}</div><div class="name">Fidelity</div><p>${rep.fidelity_permille === null ? "No case had an intended verdict, so there is nothing to compare with." : "How often the majority verdict is the one you intended."}</p></div>
+    <div class="readout"><div class="big num">${pct(rep.consistency_permille)}</div><div class="bar" aria-hidden="true"><i style="width:${Math.floor(rep.consistency_permille / 10)}%"></i></div><div class="name">Consistency</div><p>How often two wordings give the same case the same verdict.</p></div>
+    <div class="readout"><div class="big num">${pct(rep.fidelity_permille)}</div><div class="bar" aria-hidden="true"><i style="width:${rep.fidelity_permille === null ? 0 : Math.floor(rep.fidelity_permille / 10)}%"></i></div><div class="name">Fidelity</div><p>${rep.fidelity_permille === null ? "No case had an intended verdict, so there is nothing to compare with." : "How often the majority verdict is the one you intended."}</p></div>
     <div class="readout"><div class="big num">${rep.boundary.length}</div><div class="name">Boundary ${rep.boundary.length === 1 ? "case" : "cases"}</div><p>${rep.boundary.length ? "Where the wordings split or the majority missed your intent." : "Every case was read the same way, as intended."}</p></div>`;
   $("best-line").textContent = bestWordingLine(r);
   $("drift-line").textContent = state.source === "sample" ? "" : driftLine(r);
@@ -138,6 +138,8 @@ async function readJson(fn, args) {
 
 function boardNote(html, cls = "") { const el = $("board-status"); el.hidden = !html; el.className = "status " + cls; el.innerHTML = html || ""; }
 
+function netState(cls, title) { const n = $("net"); n.className = "net " + cls; if (title) n.title = title; }
+
 async function loadBoard() {
   if (!contract) {
     $("packs").innerHTML = "";
@@ -147,12 +149,13 @@ async function loadBoard() {
   }
   $("board-lead").textContent = "Every measurement is public. Open one to see its table.";
   let page;
-  try { page = JSON.parse(await readJson("get_packs_page", [0, 50])); } catch (e) { boardNote("Could not read the board: " + esc(e.message || e), "bad"); return; }
+  try { page = JSON.parse(await readJson("get_packs_page", [0, 50])); } catch (e) { netState("is-down", "Could not reach Studionet just now."); boardNote("Could not read the board: " + esc(e.message || e), "bad"); return; }
+  netState("is-live", "Connected: this page is reading GenLayer Studionet, a test network.");
   boardNote("");
   state.packs = (page.items || []).slice().reverse();
   $("packs").innerHTML = state.packs.length ? state.packs.map(p => {
     const g = gradeInfo(p.grade);
-    return `<li><a href="?pack=${esc(p.id)}" data-id="${esc(p.id)}"><span class="t">${esc(p.label)}</span><span class="g">${esc(g ? g.word : p.grade)} <span class="num">${score100(p.score_permille)}</span></span>
+    return `<li><a href="?pack=${esc(p.id)}" data-id="${esc(p.id)}"><span class="t">${esc(p.label)}</span><span class="g g-${esc(p.grade)}">${esc(g ? g.word : p.grade)} <span class="num">${score100(p.score_permille)}</span></span>
       <span class="m">${p.runs} ${p.runs === 1 ? "run" : "runs"}, latest ${esc(utc(p.at))}${p.previous ? ", revises " + esc(shortId(p.previous)) : ""}</span></a></li>`;
   }).join("") : `<li class="empty" style="display:block;border-top:0">Nothing has been measured yet. Be the first: use the form below.</li>`;
   const select = $("f-previous");
@@ -190,7 +193,7 @@ $("openform").addEventListener("submit", e => { e.preventDefault(); openPack($("
 const draft = { label: "", previous: "", wordings: ["", "", "", ""], cases: Array.from({ length: 8 }, () => ({ text: "", intent: "OPEN" })) };
 
 function renderRows() {
-  $("wordings").innerHTML = draft.wordings.map((w, i) => `<div class="row" data-w="${i}"><span class="idx">${WORDING_LETTERS[i]}</span>
+  $("wordings").innerHTML = draft.wordings.map((w, i) => `<div class="row" data-w="${i}"><span class="idx tag s${i + 1}">${WORDING_LETTERS[i]}</span>
     <div><label class="sr" for="w${i}">Wording ${WORDING_LETTERS[i]}</label><textarea id="w${i}" data-w="${i}" maxlength="700" placeholder="State the rule in your own way.">${esc(w)}</textarea></div>
     <div class="tools">${draft.wordings.length > LIMITS.wordings[0] ? `<button class="mini" type="button" data-rm-w="${i}">Remove</button>` : ""}</div></div>`).join("");
   $("cases").innerHTML = draft.cases.map((c, i) => `<div class="row" data-c="${i}"><span class="idx num">${i + 1}</span>
@@ -217,6 +220,23 @@ async function refreshChecks() {
     if (mine === idToken) $("idline").innerHTML = `This pack will be stored as <span class="mono">${esc(id)}</span>.`;
   } else if (mine === idToken) $("idline").textContent = "";
   updateSend(list.length === 0);
+  renderRail(list);
+}
+
+function renderRail(list) {
+  const w = draft.wordings, c = draft.cases;
+  const wf = w.filter(x => x.trim()).length, cf = c.filter(x => x.text.trim()).length;
+  const intended = c.filter(x => x.intent !== "OPEN").length;
+  const items = [
+    { what: "Name the rule", more: draft.label.trim() ? "" : "A short name for the board.", done: !!draft.label.trim() },
+    { what: "Write the wordings", more: `${wf} of ${w.length} written`, done: wf === w.length && w.length >= LIMITS.wordings[0] },
+    { what: "Add the cases", more: `${cf} of ${c.length} written, ${intended} with an intended verdict`, done: cf === c.length && c.length >= LIMITS.cases[0] },
+    { what: "Pass the checks", more: list.length ? (wf || cf || draft.label.trim() ? `${list.length} to fix` : "Fills in as you write.") : "All set.", done: list.length === 0 },
+    { what: "Connect a wallet", more: state.account ? "" : "Needed to sign the measurement.", done: !!state.account },
+  ];
+  const now = items.findIndex(i => !i.done);
+  $("rail").innerHTML = items.map((it, i) => `<li class="${it.done ? "is-done" : i === now ? "is-now" : "is-todo"}"><span class="mk" aria-hidden="true">${it.done ? "&#10003;" : i + 1}</span><span><span class="what">${esc(it.what)}${it.done ? '<span class="sr"> (done)</span>' : ""}</span>${it.more ? `<span class="more">${esc(it.more)}</span>` : ""}</span></li>`).join("");
+  [items[0].done, items[1].done, items[2].done].forEach((d, i) => $("step-" + (i + 1)).classList.toggle("is-done", d));
 }
 
 function updateSend(valid) {
@@ -293,21 +313,43 @@ async function afterApplied(id) {
   let raw;
   try { raw = await readJson("get_report_json", [id]); } catch { raw = null; }
   if (!raw || raw === "NONE") {
+    setTrack(3, true);
     status("The transaction settled, but nothing was stored. The model's answer did not follow the required format, so the contract reports the pack as unmeasurable. Send it again.", "bad");
     return;
   }
+  setTrack(4); $("step-4").classList.add("is-done");
   status(`Measured and recorded. <a href="?pack=${esc(id)}" data-open="${esc(id)}">Open the reading</a>.`, "ok");
   await loadBoard();
   await openPack(id, { scroll: false });
 }
 
+// the four stages of a measurement, shown as a line that fills as the transaction moves
+let trackAt = -1, trackTimer = null, trackT0 = 0;
+function stopTimer() { if (trackTimer) { clearInterval(trackTimer); trackTimer = null; } }
+function setTrack(n, failed = false) {
+  const ol = $("track");
+  if (n < 0) { ol.hidden = true; stopTimer(); $("elapsed").textContent = ""; trackAt = -1; return; }
+  ol.hidden = false; trackAt = n;
+  [...ol.children].forEach((li, i) => { li.className = i < n ? "is-done" : i === n ? (failed ? "is-failed" : "is-now") : ""; });
+  if (n === 2 && !failed) {
+    if (!trackTimer) {
+      trackT0 = Date.now();
+      const tick = () => { const t = Math.floor((Date.now() - trackT0) / 1000); $("elapsed").textContent = Math.floor(t / 60) + ":" + String(t % 60).padStart(2, "0"); };
+      tick(); trackTimer = setInterval(tick, 1000);
+    }
+  } else stopTimer();
+}
+const failTrack = () => setTrack(Math.max(trackAt, 0), true);
+
 function progress(u) {
+  if (u.stage === "submitted" || (u.stage === "status" && trackAt < 2)) setTrack(2);
   if (u.stage === "submitted") status(`Sent. Transaction ${txLink(u.hash)}. The validators are reading your cases once per wording; this usually takes one to three minutes.`);
   else if (u.stage === "status") status(`Transaction ${txLink(u.hash)}: ${esc(u.status || "pending")}.`);
   else if (u.stage === "network-hiccup") status("The network did not answer just now. Still watching.");
 }
 
 function outcome(o, id) {
+  if (o.kind !== "APPLIED" && o.kind !== "STILL_PENDING") failTrack();
   switch (o.kind) {
     case "APPLIED": return afterApplied(id);
     case "REJECTED_BY_USER": return status(esc(o.message), "bad");
@@ -325,6 +367,7 @@ $("composer").addEventListener("submit", async e => {
   if (state.busy || problems(draft).length || !contract || !state.account) return;
   if (!(await currentNetworkOk())) { status("The wallet is on another network. Switch to GenLayer Studio network and try again.", "bad"); return; }
   state.busy = true; refreshChecks();
+  $("step-4").classList.remove("is-done"); setTrack(-1); setTrack(0);
   const text = packJson(draft);
   const id = await packId(draft);
   status("Waiting for your wallet. Check it for a signature request.");
@@ -337,7 +380,7 @@ $("composer").addEventListener("submit", async e => {
       onUpdate: progress,
     });
     await outcome(o, id);
-  } catch (err) { status("Something went wrong: " + esc(err.message || err), "bad"); }
+  } catch (err) { failTrack(); status("Something went wrong: " + esc(err.message || err), "bad"); }
   finally { state.busy = false; refreshChecks(); }
 });
 
@@ -361,6 +404,7 @@ async function recover() {
     const step = nextStep(p, { listing, nonceNow });
     if (step.kind === "NOT_SENT") { clearPending(); box.hidden = true; status("That transaction was never sent, so nothing is waiting. You can measure again.", "ok"); }
     else if (step.kind === "WATCH") {
+      setTrack(2);
       status(`Found it: transaction ${txLink(step.hash)}. Watching until it settles.`);
       const o = await watchTx(readClient(), step.hash, { onUpdate: progress, pollMs: POLL });
       if (o.kind !== "STILL_PENDING") clearPending();
@@ -375,10 +419,10 @@ async function recover() {
 
 function links() {
   const repo = cfg.REPO || "";
-  if (repo) { $("link-source").href = repo; }
-  else { $("link-source").removeAttribute("href"); }
-  if (contract && EXPLORER) { $("link-contract").href = `${EXPLORER}/address/${contract}`; $("nav-contract").href = `${EXPLORER}/address/${contract}`; }
-  else { $("link-contract").textContent = "Contract address: not set yet"; $("link-contract").removeAttribute("href"); }
+  if (repo) { $("link-source").href = repo; $("foot-source").href = repo; }
+  else { $("link-source").removeAttribute("href"); $("foot-source").remove(); }
+  if (contract && EXPLORER) { $("link-contract").href = `${EXPLORER}/address/${contract}`; $("nav-contract").href = `${EXPLORER}/address/${contract}`; $("foot-contract").href = `${EXPLORER}/address/${contract}`; $("foot-contract").target = "_blank"; $("foot-contract").rel = "noopener"; }
+  else { $("link-contract").textContent = "Contract address: not set yet"; $("link-contract").removeAttribute("href"); $("foot-contract").remove(); }
 }
 
 (async function start() {
@@ -388,7 +432,7 @@ function links() {
   await recover();
   const want = (query.get("pack") || cfg.FIRST_PACK || "").toLowerCase();
   let opened = false;
-  if (want && contract) { await loadBoard(); opened = await openPack(want, { scroll: false, quiet: !query.get("pack") }); }
+  if (want && contract) { $("gauge").innerHTML = `<p class="line">Reading the latest measurement from Studionet…</p>`; await loadBoard(); opened = await openPack(want, { scroll: false, quiet: !query.get("pack") }); }
   else await loadBoard();
   if (!opened) show(parseReport(sample), "sample");
 })();

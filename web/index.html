@@ -18,6 +18,8 @@
     <svg viewBox="0 0 34 22" aria-hidden="true" focusable="false"><g fill="none" stroke-width="2.4" stroke-linecap="round"><path d="M1 4 C12 4 12 11 20 11 S28 4 33 4" stroke="#3987e5"/><path d="M1 11 H33" stroke="#199e70"/><path d="M1 18 C12 18 12 11 20 11 S28 18 33 18" stroke="#d95926"/></g></svg>
     Wind Tunnel
   </a>
+  <div class="top-right">
+  <span class="net" id="net" title="This page reads and writes GenLayer Studionet, a test network."><i aria-hidden="true"></i>Studionet</span>
   <nav aria-label="Sections">
     <a href="#read">Reading</a>
     <a href="#board">Board</a>
@@ -25,6 +27,7 @@
     <a href="#how">How it works</a>
     <a id="nav-contract" href="#how">Contract</a>
   </nav>
+  </div>
 </header>
 
 <main id="top">
@@ -121,37 +124,65 @@
         <h2 id="h-measure">Measure a rule</h2>
         <p>Write the rule in three to five different ways, as different people would. Add six to twelve cases and say what verdict you intend for each. Leave a case open when you have no expectation.</p>
         <p class="hint">Eight cases and four wordings is a good start: more cells make one stray answer matter less.</p>
-        <p><button class="mini" type="button" id="ex1">Fill in a vague refund rule</button><br><button class="mini" type="button" id="ex2">Fill in its revised version</button></p>
+        <div class="rail-box">
+          <h3 class="rail-title">Before you measure</h3>
+          <ol class="rail" id="rail" aria-label="What is still missing"></ol>
+        </div>
       </header>
       <form id="composer" novalidate>
-        <div class="field">
-          <label for="f-label">Name of the rule</label>
-          <input type="text" id="f-label" maxlength="80" autocomplete="off" placeholder="Refund rule v1">
+        <div class="starter">
+          <div><b>Not sure where to start?</b><span>Load a refund rule written vaguely, or the same rule made precise, and change anything you like.</span></div>
+          <div class="starter-btns">
+            <button class="btn small" type="button" id="ex1">Vague refund rule</button>
+            <button class="btn small" type="button" id="ex2">Revised version</button>
+          </div>
         </div>
-        <div class="field">
-          <label for="f-previous">Replaces an earlier measurement</label>
-          <select id="f-previous"><option value="">No, this is a first version</option></select>
-          <p class="hint" style="margin-top:8px">Pick the measured version this one revises. The board then shows whether the rule got steadier.</p>
+        <div class="step" id="step-1" data-n="1">
+          <h3 class="step-h">Name the rule</h3>
+          <div class="field">
+            <label for="f-label">Name of the rule</label>
+            <input type="text" id="f-label" maxlength="80" autocomplete="off" placeholder="Refund rule v1">
+          </div>
+          <div class="field">
+            <label for="f-previous">Replaces an earlier measurement</label>
+            <select id="f-previous"><option value="">No, this is a first version</option></select>
+            <p class="hint" style="margin-top:8px">Pick the measured version this one revises. The board then shows whether the rule got steadier.</p>
+          </div>
         </div>
-        <div class="field">
-          <span class="label">Wordings <span class="counter" id="wc"></span></span>
-          <div id="wordings"></div>
-          <button class="mini" type="button" id="addw">Add a wording</button>
+        <div class="step" id="step-2" data-n="2">
+          <h3 class="step-h">Write it in different ways</h3>
+          <div class="field">
+            <span class="label">Wordings <span class="counter" id="wc"></span></span>
+            <div id="wordings"></div>
+            <button class="mini" type="button" id="addw">Add a wording</button>
+          </div>
         </div>
-        <div class="field">
-          <span class="label">Cases <span class="counter" id="cc"></span></span>
-          <div id="cases"></div>
-          <button class="mini" type="button" id="addc">Add a case</button>
+        <div class="step" id="step-3" data-n="3">
+          <h3 class="step-h">Add the cases</h3>
+          <div class="field">
+            <span class="label">Cases <span class="counter" id="cc"></span></span>
+            <div id="cases"></div>
+            <button class="mini" type="button" id="addc">Add a case</button>
+          </div>
         </div>
-        <ul class="problems" id="problems" aria-live="polite"></ul>
-        <p class="idline" id="idline"></p>
-        <div class="walletline">
-          <button class="btn" type="button" id="connect">Connect wallet</button>
-          <span id="account">No wallet connected.</span>
+        <div class="step last" id="step-4" data-n="4">
+          <h3 class="step-h">Measure</h3>
+          <ul class="problems" id="problems" aria-live="polite"></ul>
+          <p class="idline" id="idline"></p>
+          <div class="walletline">
+            <button class="btn" type="button" id="connect">Connect wallet</button>
+            <span id="account">No wallet connected.</span>
+          </div>
+          <button class="btn primary" type="submit" id="send" disabled>Measure on Studionet</button>
+          <ol class="track" id="track" aria-label="Progress of the measurement" hidden>
+            <li data-t="0"><span class="dot"></span><span class="tl">Sign in your wallet</span></li>
+            <li data-t="1"><span class="dot"></span><span class="tl">Send to the network</span></li>
+            <li data-t="2"><span class="dot"></span><span class="tl">Validators read the cases</span><span class="elapsed" id="elapsed"></span></li>
+            <li data-t="3"><span class="dot"></span><span class="tl">Result recorded</span></li>
+          </ol>
+          <p class="status" id="send-status" role="status" hidden></p>
+          <p class="status bad" id="recovery" hidden></p>
         </div>
-        <button class="btn primary" type="submit" id="send" disabled>Measure on Studionet</button>
-        <p class="status" id="send-status" role="status" hidden></p>
-        <p class="status bad" id="recovery" hidden></p>
       </form>
     </div>
   </div>
@@ -190,6 +221,7 @@
 
 <footer class="foot paper">
   <p>Rule Wind Tunnel runs on GenLayer Studionet, a test network. No funds are held or moved, and the page never asks for a key: every signature comes from your own wallet.</p>
+  <p class="foot-links"><a id="foot-source" href="#how">Source on GitHub</a><a id="foot-contract" href="#how">Contract on the explorer</a><a href="#top">Back to the top</a></p>
 </footer>
 
 <noscript><p class="status bad" style="margin:24px">This page needs JavaScript to read the chain and draw the test section.</p></noscript>
