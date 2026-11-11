@@ -314,7 +314,7 @@ function outcome(o, id) {
     case "NOT_SENT": return status(esc(o.message), "bad");
     case "AMBIGUOUS": return status(esc(o.message) + " Reload the page to reconcile it.", "bad");
     case "REJECTED_BY_CONTRACT": return status(`The contract refused it (transaction ${txLink(o.hash)}). Usually the pack was measured less than five minutes ago, has already had five runs, or names an earlier version that is not on the board.`, "bad");
-    case "NOT_APPLIED": return status(`The validators did not settle on a result (${esc(o.status)}). Nothing was recorded. This can happen when a table sits right on a grade edge: add cases or sharpen a wording, then try again.`, "bad");
+    case "NOT_APPLIED": return status(`The validators did not settle on a result (${esc(o.status)}). Nothing was recorded. This happens when the validators' models read the pack very differently (grades two or more steps apart), which is itself a sign the rule is unsteady: sharpen a wording or add cases, then try again.`, "bad");
     case "STILL_PENDING": return status(`Still waiting after 15 minutes. Transaction ${txLink(o.hash)} may yet settle; this page will pick it up if you reload.`, "bad");
     default: return status(`The outcome is unclear (${esc(o.status)} / ${esc(o.exec)}). Check transaction ${txLink(o.hash)} on the explorer before sending again.`, "bad");
   }

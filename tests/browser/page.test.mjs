@@ -306,7 +306,7 @@ async function ready(c) {
   await ready(c);
   c.rpc.txScripts[H] = [tx("PENDING"), tx("UNDETERMINED")];
   await c.p.click("#send");
-  ok("send: UNDETERMINED is 'did not settle, nothing recorded', with advice", await waitText(c.p, "#send-status", /did not settle on a result \(UNDETERMINED\)\. Nothing was recorded.*grade edge/));
+  ok("send: UNDETERMINED is 'did not settle, nothing recorded', with advice", await waitText(c.p, "#send-status", /did not settle on a result \(UNDETERMINED\)\. Nothing was recorded.*read the pack very differently/));
   await c.ctx.close();
 }
 {
