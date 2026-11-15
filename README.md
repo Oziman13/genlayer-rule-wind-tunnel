@@ -15,6 +15,22 @@ Status: **v0.1.1, Studionet only.** See [Live run](#live-run) and [What it does 
 
 For reviewers: start with [`docs/REVIEWER_EVIDENCE.md`](docs/REVIEWER_EVIDENCE.md) (every transaction, hash and number, checkable on the explorer). Design: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md), [`docs/CONSENSUS.md`](docs/CONSENSUS.md), [`docs/THREAT_MODEL.md`](docs/THREAT_MODEL.md). Tests and what they cover: [`docs/VERIFICATION.md`](docs/VERIFICATION.md). Deployment, including the failed Bradbury attempt: [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md).
 
+## Demo video and screenshots
+
+* Demo video (1 min 21 s): https://youtu.be/OPT3aU90AqM
+* Live page: https://oziman13.github.io/genlayer-rule-wind-tunnel/
+
+The screenshots below were taken from `web/` served locally and opened **without a contract address**, so the page shows its built-in sample table. The page labels that sample as made-up data, not as a network measurement. The real Studionet runs (vague rule 142 out of 1,000, revised rule 857) are in [`docs/REVIEWER_EVIDENCE.md`](docs/REVIEWER_EVIDENCE.md).
+
+| | |
+|---|---|
+| ![Desktop, top of the page](docs/screenshots/01-hero-1440.png) | ![Desktop, what the table says](docs/screenshots/02-reading-1440.png) |
+| Desktop 1440 px: top of the page. | Desktop 1440 px: reading the table. |
+| ![Desktop, measure a rule](docs/screenshots/04-measure-1440.png) | ![Tablet, measure a rule](docs/screenshots/07-measure-768.png) |
+| Desktop 1440 px: the form that sends a measurement. | Tablet 768 px: the same form. |
+| ![Phone, top of the page](docs/screenshots/05-hero-390.png) | ![Phone, reading the table](docs/screenshots/06-reading-390.png) |
+| Phone 390 px: top of the page. | Phone 390 px: reading the table. |
+
 ## How a measurement works
 
 | Step | What happens | Who has to agree |
@@ -113,6 +129,8 @@ Transactions are treated as successful only when the network status is `FINALIZE
 
 Fonts (Bricolage Grotesque, Newsreader, SIL Open Font License) are served from `web/fonts`.
 
+The project's own code is under the MIT License (see `LICENSE`); the fonts keep their own license.
+
 ## Live run
 
 Measured on GenLayer **Studionet** on 2026-11-10 with the two packs in `fixtures/`. Contract (v0.1.1): [`0xF319FDf761A71Eb81D8FD8bcaBC9d03e155270E5`](https://explorer-studio.genlayer.com/address/0xF319FDf761A71Eb81D8FD8bcaBC9d03e155270E5). Both transactions were `FINALIZED`, execution `SUCCESS`, consensus `Accepted`, with five validators per run on different models (for example glm, deepseek, gemini and gemma in the first run, gpt-5.4 and sonnet in the second); validators that show "cancelled after quorum" were stopped once quorum was reached, which is normal.
@@ -161,6 +179,8 @@ fixtures/                demo packs (pretty, and *.min.json: paste the text as i
 scripts/                 mutation check of the v0.1.1 changes; verify-deployed-source.mjs (on-chain source vs this repository)
 evidence/                test output, mutation checks, source-parity result
 deployed/                the exact source stored on-chain for the Studionet contract (22,321 bytes)
-docs/                    architecture, consensus, threat model, verification, deployment, reviewer evidence
+docs/                    architecture, consensus, threat model, verification, deployment, reviewer evidence, screenshots/
+LICENSE                  MIT
+SECURITY.md              scope and how to report a problem
 .github/workflows/       CI: bundle check, browser tests, direct tests, parity script
 ```
