@@ -36,7 +36,8 @@ A static page built with esbuild (`npm run build` -> `web/app.js`). It:
 - reads the board and reports from the contract with `genlayer-js`, and recomputes none of the contract's numbers;
 - computes the pack id in JavaScript with the same canonical text as the contract, so the id shown before sending equals the id the contract assigns (checked in `tests/browser/logic.test.mjs`);
 - sends a measurement from the visitor's own wallet. A pending record is written to the browser before the wallet is asked to sign; a send that may have gone out is reconciled after a reload before anything else is sent;
-- treats a transaction as successful only when the status is `FINALIZED` and the execution result is a success.
+- treats a transaction as successful only when the status is `FINALIZED` and the execution result is a success;
+- since v0.2.0: shows two measurements side by side from the contract's `compare_json` (`web/src/compare.js`; the only arithmetic is subtracting the values it displays), flags vague wording as advice while a pack is written (`web/src/hedges.js`, a word list that never blocks a measurement), and copies a reading as Markdown (`web/src/report-md.js`). The contract is unchanged.
 
 ## What is deliberately absent
 

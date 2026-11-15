@@ -49,8 +49,30 @@ PASS chart: gates are evenly spaced left to right
 PASS chart: wordings in a lane are spread but stay inside it
 PASS chart: lanes run complies, unclear, violates from the top
 PASS chart: a path starts at the inlet and visits every gate
+PASS hedges: every wording of the vague refund rule is flagged
+PASS hedges: the precise refund rule has none
+PASS hedges: whole words only, any case, each phrase once
+PASS hedges: multi-word phrases beat their parts
+PASS hedges: non-ASCII neighbours do not count as word edges
+PASS hedges: empty and odd input is safe
+PASS hedges: the list has no duplicates and nothing empty
+PASS hedges: advice never changes what the contract would accept
+PASS compare: a contract answer parses, JSON text too
+PASS compare: junk and wrong shapes are refused
+PASS compare: rows show floored percents and the change between the shown values
+PASS compare: grade moved up, boundary cases fell and that is better
+PASS compare: the other way round reads as worse
+PASS compare: no intended verdicts means fidelity is none, not zero
+PASS compare: one sentence about the score
+PASS markdown: title, grade and the three numbers
+PASS markdown: a table with one row per case and one column per wording
+PASS markdown: pipes and line breaks in the text cannot break the table
+PASS markdown: boundary cases are listed with the reason
+PASS markdown: the record names the pack id and contract, and says it is a test network
+PASS markdown: it does not claim the rule is right
+PASS markdown: a clean report says there were no boundary cases
 PASS config: a contract address is set
 PASS config: the first view is the live revised pack
 PASS id: revised refund pack equals the id the contract returned on Studionet
 
-54 passed, 0 failed
+76 passed, 0 failed

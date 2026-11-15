@@ -1,6 +1,6 @@
 {
   "name": "genlayer-rule-wind-tunnel",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "private": true,
   "type": "module",
   "description": "Rule Wind Tunnel: measure how steadily a model reads a rule (GenLayer Intelligent Contract and web client)",

@@ -7,6 +7,9 @@ import { webcrypto } from "node:crypto";
 import { LIMITS, problems, normalize, packId, packJson } from "../../web/src/pack.js";
 import { parseReport, pct, score100, boundaryRows, bestWordingLine, driftLine, matrixRows, gradeInfo, GRADES, utc, shortId } from "../../web/src/view.js";
 import { streamSvg, gateX, offset, pathFor, LANE_Y } from "../../web/src/chart.js";
+import { findHedges, hedgeNotes, HEDGES } from "../../web/src/hedges.js";
+import { parseCompare, compareRows, compareLine } from "../../web/src/compare.js";
+import { reportMarkdown } from "../../web/src/report-md.js";
 import sample from "../../web/src/sample.js";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
@@ -92,6 +95,44 @@ ok("chart: wordings in a lane are spread but stay inside it", offset(0, 4) < off
 ok("chart: lanes run complies, unclear, violates from the top", LANE_Y.C < LANE_Y.U && LANE_Y.U < LANE_Y.V);
 const d = pathFor("CVU", 0, 1, 3);
 ok("chart: a path starts at the inlet and visits every gate", d.startsWith("M ") && (d.match(/ C /g) || []).length === 2 && d.includes(`${gateX(2, 3)} ${LANE_Y.U}`));
+
+// ---- v0.2.0: vague-word hints (advice, never a block)
+const hn1 = hedgeNotes(v1.wordings), hn2 = hedgeNotes(v2.wordings);
+ok("hedges: every wording of the vague refund rule is flagged", hn1.map(n => n.letter).join("") === "ABCD" && hn1[0].phrases.join() === "reasonable" && hn1[1].phrases.join() === "soon" && hn1[2].phrases.join() === "promptly" && hn1[3].phrases.join() === "in good time,acceptable");
+ok("hedges: the precise refund rule has none", hn2.length === 0);
+ok("hedges: whole words only, any case, each phrase once", findHedges("PROMPTLY, promptly and Prompt").join() === "PROMPTLY,Prompt" && findHedges("unpromptly, soonest, reasonableness, a fewer").length === 0);
+ok("hedges: multi-word phrases beat their parts", findHedges("Refund as soon as possible.").join() === "as soon as possible" && findHedges("in good time").join() === "in good time");
+ok("hedges: non-ASCII neighbours do not count as word edges", findHedges("çsoon soonü").length === 0 && findHedges("(soon)").join() === "soon");
+ok("hedges: empty and odd input is safe", findHedges("").length === 0 && findHedges(null).length === 0 && hedgeNotes([]).length === 0 && hedgeNotes(undefined).length === 0);
+ok("hedges: the list has no duplicates and nothing empty", new Set(HEDGES).size === HEDGES.length && HEDGES.every(h => h.trim() === h && h.length > 2));
+ok("hedges: advice never changes what the contract would accept", problems(v1).length === 0 && JSON.stringify(problems(v1)) === JSON.stringify(problems({ ...v1 })));
+
+// ---- v0.2.0: comparing two measurements. Numbers are the two Studionet runs (scores 142 and 857); boundary counts follow from the stored tables.
+const sideA = { id: "a".repeat(64), label: "Refund rule v1 (vague)", grade: "UNSTABLE", score_permille: 142, consistency_permille: 875, fidelity_permille: 142, boundary_cases: 7 };
+const sideB = { id: "b".repeat(64), label: "Refund rule v2 (30 days, unused)", grade: "USABLE", score_permille: 857, consistency_permille: 937, fidelity_permille: 857, boundary_cases: 2 };
+const cmp = { first: sideA, second: sideB, delta: { score_permille: 715, consistency_permille: 62, fidelity_permille: 715, boundary_cases: -5 } };
+ok("compare: a contract answer parses, JSON text too", !!parseCompare(cmp) && !!parseCompare(JSON.stringify(cmp)));
+ok("compare: junk and wrong shapes are refused", parseCompare("nope") === null && parseCompare(null) === null && parseCompare({}) === null
+  && parseCompare({ ...cmp, first: { ...sideA, grade: "FINE" } }) === null && parseCompare({ ...cmp, second: { ...sideB, score_permille: "857" } }) === null
+  && parseCompare({ ...cmp, delta: null }) === null && parseCompare({ ...cmp, first: { ...sideA, boundary_cases: 1.5 } }) === null);
+const rows = compareRows(cmp);
+ok("compare: rows show floored percents and the change between the shown values", rows[0].first === "14" && rows[0].second === "85" && rows[0].change === "+71" && rows[2].first === "87%" && rows[2].second === "93%" && rows[2].change === "+6" && rows[3].first === "14%" && rows[3].second === "85%" && rows[3].change === "+71");
+ok("compare: grade moved up, boundary cases fell and that is better", rows[1].first === "Unstable" && rows[1].second === "Usable" && rows[1].change === "up" && rows[1].trend === "better" && rows[4].change === "-5" && rows[4].trend === "better");
+ok("compare: the other way round reads as worse", compareRows({ first: sideB, second: sideA, delta: {} }).every(x => x.trend === "worse"));
+ok("compare: no intended verdicts means fidelity is none, not zero", compareRows({ first: { ...sideA, fidelity_permille: null }, second: { ...sideB, fidelity_permille: null }, delta: {} })[3].first === "none");
+ok("compare: one sentence about the score", compareLine(cmp) === "Refund rule v2 (30 days, unused) against Refund rule v1 (vague): steadier. The score rose from 14 to 85 (+71)."
+  && /less steady\. The score fell from 85 to 14 \(-71\)/.test(compareLine({ first: sideB, second: sideA })) && /the same score, 14 out of 100/.test(compareLine({ first: sideA, second: { ...sideA, id: "c".repeat(64) } })));
+
+// ---- v0.2.0: the reading as Markdown
+const rm = parseReport({ ...sample, id: "9".repeat(64), pack: { ...sample.pack, label: "A | B rule", cases: sample.pack.cases.map((c, i) => i === 0 ? { ...c, text: "Pipe | in\na case" } : c) } });
+const md = reportMarkdown(rm, { contract: "0x" + "d4".repeat(20), explorer: "https://explorer.example", repo: "https://github.com/x/y" });
+ok("markdown: title, grade and the three numbers", md.startsWith("# Rule Wind Tunnel: A \\| B rule\n") && /\*\*Shaky\*\*, score 62 out of 100\./.test(md) && /- Consistency: 62%/.test(md) && /- Fidelity: 71%/.test(md) && /- Boundary cases: 5/.test(md));
+ok("markdown: a table with one row per case and one column per wording", md.split("\n").filter(l => /^\| \d+\. /.test(l)).length === 8 && /\| Case \| Intended \| A \| B \| C \| D \|/.test(md));
+ok("markdown: pipes and line breaks in the text cannot break the table", /\| 1\. Pipe \\\| in a case \|/.test(md));
+ok("markdown: boundary cases are listed with the reason", (md.match(/^- Case \d+: /gm) || []).length === 5);
+ok("markdown: the record names the pack id and contract, and says it is a test network", md.includes("`" + "9".repeat(64) + "`") && md.includes("[`0x" + "d4".repeat(20) + "`](https://explorer.example/address/0x" + "d4".repeat(20) + ")") && /test network/.test(md));
+ok("markdown: it does not claim the rule is right", /not proof the rule is right/.test(md));
+ok("markdown: a clean report says there were no boundary cases", /None\. Every wording agreed/.test(reportMarkdown(parseReport({ ...sample, report: { ...sample.report, boundary: [], per_case: sample.report.per_case.map(c => ({ ...c, class: "UNANIMOUS", off_intent: false })) } }))));
 
 // shipped configuration: the live Studionet contract and the id the chain returned for the revised refund pack
 const cfg = fs.readFileSync(path.join(ROOT, "web", "config.js"), "utf8");

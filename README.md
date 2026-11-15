@@ -8,10 +8,10 @@ Rule Wind Tunnel is a test rig for that. You submit a **pack**: three to five wo
 
 * `contracts/rule_wind_tunnel.py` — the Intelligent Contract (one Python file, no funds, no web access).
 * `web/` — a static page that reads the chain and sends measurements from your own wallet. No keys, no third-party requests, fonts self-hosted.
-* `tests/` — 174 direct-mode tests, 6 local-network tests, 134 browser/logic checks, and a mutation check of the contract.
+* `tests/` — 174 direct-mode tests, 6 local-network tests, 181 browser/logic checks (76 logic, 105 page), and a mutation check of the contract.
 * `fixtures/` — the demo packs used in the tests and in the live run (a vague refund rule and its revision).
 
-Status: **v0.1.1, Studionet only.** See [Live run](#live-run) and [What it does not show](#what-it-does-not-show).
+Status: **web page v0.2.0, contract v0.1.1 (unchanged), Studionet only.** What changed in the page since the first release is in [`CHANGELOG.md`](CHANGELOG.md). See [Live run](#live-run) and [What it does not show](#what-it-does-not-show).
 
 For reviewers: start with [`docs/REVIEWER_EVIDENCE.md`](docs/REVIEWER_EVIDENCE.md) (every transaction, hash and number, checkable on the explorer). Design: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md), [`docs/CONSENSUS.md`](docs/CONSENSUS.md), [`docs/THREAT_MODEL.md`](docs/THREAT_MODEL.md). Tests and what they cover: [`docs/VERIFICATION.md`](docs/VERIFICATION.md). Deployment, including the failed Bradbury attempt: [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md).
 
@@ -126,6 +126,14 @@ Result on v0.1.1: **11 of 11 caught** on the changed code. For v0.1.0 the result
 
 `web/index.html` is a static page (built into `web/app.js` with `npm run build`). It reads the board, draws the selected measurement as a test section (each wording is a line, each case a gate; the height at which a line crosses a gate is its verdict), lists the boundary cases in words, offers the full table as an ordinary table, and sends new measurements through the visitor's own wallet. It never asks for a key. Until `web/config.js` has a contract address it works on a clearly labelled **sample table** that is not a network measurement.
 
+Since v0.2.0 the page also:
+
+* **compares two measurements** side by side, using the contract's `compare_json` (which earlier versions of the page never called), with a one-click comparison between a rule and the version it revises;
+* **points at vague wording while you write** ("reasonable", "promptly", "soon" and about fifty other words that leave a model room to guess). It is a word list, not a measurement, and it never blocks a measurement;
+* **copies a measured reading as Markdown** (grade, numbers, wordings, the table of verdicts, boundary cases, pack id and contract) for a pull request or a design note.
+
+None of this changes the contract: the deployed bytes are still the v0.1.1 file in `deployed/`.
+
 Transactions are treated as successful only when the network status is `FINALIZED` and the execution result is a success; a pending record is written before the wallet is asked to sign, so a send that may have gone out is reconciled after a reload before anything is sent again.
 
 Fonts (Bricolage Grotesque, Newsreader, SIL Open Font License) are served from `web/fonts`.
@@ -181,6 +189,7 @@ scripts/                 mutation check of the v0.1.1 changes; verify-deployed-s
 evidence/                test output, mutation checks, source-parity result
 deployed/                the exact source stored on-chain for the Studionet contract (22,321 bytes)
 docs/                    architecture, consensus, threat model, verification, deployment, reviewer evidence, screenshots/
+CHANGELOG.md             what changed in each release
 LICENSE                  MIT
 SECURITY.md              scope and how to report a problem
 .github/workflows/       CI: bundle check, browser tests, direct tests, parity script

@@ -10,6 +10,9 @@ import {
   parseReport, gradeInfo, GRADES, pct, score100, utc, shortId, boundaryRows, bestWordingLine, driftLine, matrixRows,
   VERDICT_WORD, WORDING_LETTERS,
 } from "./view.js";
+import { hedgeNotes } from "./hedges.js";
+import { parseCompare, compareRows, compareLine } from "./compare.js";
+import { reportMarkdown } from "./report-md.js";
 import sample from "./sample.js";
 
 const $ = id => document.getElementById(id);
@@ -92,7 +95,8 @@ async function setLineage(r) {
   const grid = [0, 550, 750, 900].map(t => `<line class="axis" x1="${L}" x2="${W - R}" y1="${y(t)}" y2="${y(t)}"/><text x="${L - 8}" y="${y(t) + 4}" text-anchor="end">${t / 10}</text>`).join("");
   const dots = pts.map((p, i) => `<circle class="pt${i === pts.length - 1 ? " now" : ""}" cx="${x(i)}" cy="${y(p.score_permille)}" r="6"/><text class="lab" x="${x(i)}" y="${y(p.score_permille) - 14}" text-anchor="middle">${Math.floor(p.score_permille / 10)}</text><text x="${x(i)}" y="${H - 22}" text-anchor="${pts.length > 1 && i === 0 ? "start" : pts.length > 1 && i === pts.length - 1 ? "end" : "middle"}">${esc(p.label.length > 24 ? p.label.slice(0, 23) + "…" : p.label)}</text>`).join("");
   box.innerHTML = `<h3>Revisions of this rule</h3><p class="hint">Score of each version, oldest first. Lines at 55, 75 and 90 mark the grade edges.</p>
-    <svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Scores of ${pts.length} versions: ${pts.map(p => esc(p.label) + " " + Math.floor(p.score_permille / 10)).join(", ")}">${grid}<path class="trace" d="${line}"/>${dots}</svg>`;
+    <svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Scores of ${pts.length} versions: ${pts.map(p => esc(p.label) + " " + Math.floor(p.score_permille / 10)).join(", ")}">${grid}<path class="trace" d="${line}"/>${dots}</svg>
+    <button class="btn small" type="button" id="cmp-prev" data-a="${esc(chain[1].id)}" data-b="${esc(r.id)}">Compare with the version it revises</button>`;
   box.hidden = false;
 }
 
@@ -120,12 +124,35 @@ function bindGates(r) {
   if (first !== null) open(first); else $("gate-detail").textContent = "Select a gate to read its case.";
 }
 
+// ---------------------------------------------------------------- copy the reading as Markdown
+
+function setActions(source) {
+  $("report-actions").hidden = source === "sample";
+  $("copy-status").textContent = "";
+  $("md-fallback").hidden = true;
+}
+
+$("copy-md").addEventListener("click", async () => {
+  if (!state.report || state.source === "sample") return;
+  const md = reportMarkdown(state.report, { contract, explorer: EXPLORER, repo: cfg.REPO || "" });
+  const el = $("copy-status");
+  try {
+    await navigator.clipboard.writeText(md);
+    el.textContent = "Copied.";
+    $("md-fallback").hidden = true;
+  } catch {
+    const ta = $("md-fallback");
+    ta.value = md; ta.hidden = false; ta.focus(); ta.select();
+    el.textContent = "Could not copy automatically. The text is selected below: copy it yourself.";
+  }
+});
+
 function show(r, source) {
   state.report = r;
   state.source = source;
   const reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   $("tunnel").innerHTML = streamSvg(r, { animate: !reduce });
-  setGauge(r); setCaption(r); setKey(r); setReadouts(r); setBoundary(r); setMatrix(r); bindGates(r); setLineage(r);
+  setGauge(r); setCaption(r); setKey(r); setReadouts(r); setBoundary(r); setMatrix(r); bindGates(r); setLineage(r); setActions(source);
   document.title = source === "sample" ? "Rule Wind Tunnel" : `${r.pack.label} | Rule Wind Tunnel`;
 }
 
@@ -162,7 +189,53 @@ async function loadBoard() {
   const keep = select.value;
   select.innerHTML = `<option value="">No, this is a first version</option>` + state.packs.map(p => `<option value="${esc(p.id)}">${esc(p.label)} (${esc(gradeInfo(p.grade)?.word || p.grade)}, ${esc(shortId(p.id))})</option>`).join("");
   select.value = state.packs.some(p => p.id === keep) ? keep : "";
+  fillCompare();
 }
+
+// ---------------------------------------------------------------- comparing two measurements
+
+function fillCompare() {
+  const box = $("compare");
+  box.hidden = state.packs.length < 2;
+  if (box.hidden) return;
+  const a = $("cmp-a"), b = $("cmp-b");
+  const keepA = a.value, keepB = b.value;
+  const opts = state.packs.map(p => `<option value="${esc(p.id)}">${esc(p.label)} (${esc(gradeInfo(p.grade)?.word || p.grade)} ${score100(p.score_permille)}, ${esc(shortId(p.id))})</option>`).join("");
+  a.innerHTML = opts; b.innerHTML = opts;
+  // newest first on the board: the default is the older one against the newest
+  a.value = state.packs.some(p => p.id === keepA) ? keepA : state.packs[1].id;
+  b.value = state.packs.some(p => p.id === keepB) ? keepB : state.packs[0].id;
+}
+
+function compareNote(html, cls = "") { $("compare-out").innerHTML = html ? `<p class="status ${cls}">${html}</p>` : ""; }
+
+async function runCompare(idA, idB) {
+  if (!contract) return;
+  if (idA === idB) { compareNote("Pick two different measurements.", "bad"); return; }
+  compareNote("Reading both measurements…");
+  let raw;
+  try { raw = await readJson("compare_json", [idA, idB]); } catch (e) { compareNote("Could not read the contract: " + esc(e.message || e), "bad"); return; }
+  if (raw === "NONE") { compareNote("One of these is not on this contract.", "bad"); return; }
+  const c = parseCompare(raw);
+  if (!c) { compareNote("The contract returned something this page cannot read.", "bad"); return; }
+  const rows = compareRows(c);
+  const word = t => ({ better: "better", worse: "worse", same: "" }[t]);
+  $("compare-out").innerHTML = `<p class="cmp-line">${esc(compareLine(c))}</p>
+    <div class="tablewrap"><table class="cmp">
+      <caption class="sr">${esc(c.first.label)} compared with ${esc(c.second.label)}</caption>
+      <thead><tr><th scope="col">Measure</th><th scope="col">${esc(c.first.label)}</th><th scope="col">${esc(c.second.label)}</th><th scope="col">Change</th></tr></thead>
+      <tbody>${rows.map(x => `<tr class="t-${x.trend}"><th scope="row">${esc(x.name)}</th><td class="num">${esc(x.first)}</td><td class="num">${esc(x.second)}</td><td class="num">${esc(x.change)}${x.change && word(x.trend) ? ` <span class="cw">${word(x.trend)}</span>` : ""}</td></tr>`).join("")}</tbody></table></div>
+    <p class="hint">Changes are the shown values subtracted. Fidelity is "none" when no case had an intended verdict.</p>`;
+}
+
+$("compare-form").addEventListener("submit", e => { e.preventDefault(); runCompare($("cmp-a").value, $("cmp-b").value); });
+$("lineage").addEventListener("click", e => {
+  const b = e.target.closest("#cmp-prev");
+  if (!b) return;
+  if ($("cmp-a").querySelector(`option[value="${b.dataset.a}"]`) && $("cmp-b").querySelector(`option[value="${b.dataset.b}"]`)) { $("cmp-a").value = b.dataset.a; $("cmp-b").value = b.dataset.b; }
+  $("compare").scrollIntoView({ behavior: "smooth", block: "start" });
+  runCompare(b.dataset.a, b.dataset.b);
+});
 
 async function openPack(id, { scroll = true, quiet = false } = {}) {
   if (!/^[0-9a-f]{64}$/.test(id)) { boardNote("A pack id is 64 characters, 0 to 9 and a to f.", "bad"); return false; }
@@ -211,6 +284,7 @@ async function refreshChecks() {
   $("wc").textContent = `${draft.wordings.length} written, ${LIMITS.wordings[0]} to ${LIMITS.wordings[1]} allowed`;
   $("cc").textContent = `${draft.cases.length} written, ${LIMITS.cases[0]} to ${LIMITS.cases[1]} allowed`;
   const list = problems(draft);
+  renderHedges();
   // problems about empty boxes only matter once someone has started typing
   const touched = draft.label.trim() || draft.wordings.some(w => w.trim()) || draft.cases.some(c => c.text.trim());
   $("problems").innerHTML = touched ? list.slice(0, 6).map(p => `<li>${esc(p)}</li>`).join("") + (list.length > 6 ? `<li>${list.length - 6} more to fix.</li>` : "") : "";
@@ -221,6 +295,17 @@ async function refreshChecks() {
   } else if (mine === idToken) $("idline").textContent = "";
   updateSend(list.length === 0);
   renderRail(list);
+}
+
+// Advice only: it never blocks a measurement and says so.
+function renderHedges() {
+  const notes = hedgeNotes(draft.wordings, WORDING_LETTERS);
+  const box = $("hedges");
+  box.hidden = !notes.length;
+  if (!notes.length) { box.innerHTML = ""; return; }
+  box.innerHTML = `<b>Words that leave room to guess</b>
+    <ul>${notes.map(n => `<li>Wording ${n.letter}: ${n.phrases.map(p => `<q>${esc(p)}</q>`).join(", ")}</li>`).join("")}</ul>
+    <p>A number or a named condition gives the models less to guess at. The vague refund rule in the demo used words like these and scored 142 out of 1,000. This is a word list, not a measurement: it does not stop you from measuring, and a rule without these words can still read unsteadily.</p>`;
 }
 
 function renderRail(list) {

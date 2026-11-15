@@ -42,6 +42,13 @@ async function newCase({ wallet = {}, hasWallet = true, reducedMotion = "no-pref
     methods: [], nonce: 0, txScripts: {}, txIdx: {}, onFinal: null, finalSeen: {}, sends: [], listed: [],
     page: { total: 2, items: [item(P1, "Refund rule v1 (vague)", "SHAKY", 625), item(P2, "Refund rule v2 (30 days, unused)", "STEADY", 1000, 2, P1)] },
     reports: { [P1]: report(P1, "Refund rule v1 (vague)"), [P2]: report(P2, "Refund rule v2 (30 days, unused)", { previous: P1 }) },
+    compareCalls: [],
+    compare: (a, b) => {
+      const side = (id, label, grade, score, boundary) => ({ id, label, grade, score_permille: score, consistency_permille: score, fidelity_permille: score, boundary_cases: boundary });
+      const known = { [P1]: side(P1, "Refund rule v1 (vague)", "SHAKY", 625, 3), [P2]: side(P2, "Refund rule v2 (30 days, unused)", "STEADY", 1000, 0) };
+      if (!known[a] || !known[b]) return null;
+      return { first: known[a], second: known[b], delta: {} };
+    },
     lineage: { [P2]: [item(P2, "Refund rule v2 (30 days, unused)", "STEADY", 1000), item(P1, "Refund rule v1 (vague)", "SHAKY", 625)] },
     ...rpcInit,
   };
@@ -60,6 +67,7 @@ async function newCase({ wallet = {}, hasWallet = true, reducedMotion = "no-pref
         let s = "NONE";
         if (rpc.readFail) return { jsonrpc: "2.0", id: x.id, error: { code: -32000, message: "mock: node unreachable" } };
         if (txt.includes("get_packs_page")) s = JSON.stringify(rpc.page);
+        else if (txt.includes("compare_json")) { const ids = txt.match(/[0-9a-f]{64}/g) || []; rpc.compareCalls.push(ids); const c = rpc.compare(ids[0], ids[1]); s = c === null ? "NONE" : JSON.stringify(c); }
         else if (txt.includes("get_report_json")) s = rpc.reports[id] ? (typeof rpc.reports[id] === "string" ? rpc.reports[id] : JSON.stringify(rpc.reports[id])) : "NONE";
         else if (txt.includes("get_lineage_json")) s = JSON.stringify(rpc.lineage[id] || []);
         return { jsonrpc: "2.0", id: x.id, result: Buffer.from(abi.calldata.encode(s)).toString("hex") };
@@ -259,6 +267,82 @@ const CONTRACT_Q = `&contract=${CONTRACT}`;
   await c.p.waitForFunction(() => /Run 1 of up to 5/.test(document.getElementById("tunnel-caption").textContent));
   ok("recorded first view: a configured pack replaces the sample and the address bar is left alone", /Refund rule v2/.test(await text(c.p, "#tunnel-caption")) && !/Sample table/.test(await text(c.p, "#tunnel-caption")) && !c.p.url().includes("pack="));
   ok("recorded first view: the repository link comes from the configuration", (await c.p.getAttribute("#link-source", "href")) === "https://github.com/Oziman13/genlayer-rule-wind-tunnel");
+  await c.ctx.close();
+}
+
+// ---- 3b. v0.2.0: vague-word hints, comparing two measurements, copying the reading as Markdown
+{
+  const c = await newCase({ hasWallet: false });
+  await c.open();
+  ok("hints: nothing shown before anyone writes", await c.p.isHidden("#hedges"));
+  await c.p.click("#ex1");
+  ok("hints: the vague refund rule is flagged wording by wording", await c.p.isVisible("#hedges") && /Wording A: .*reasonable/.test(await text(c.p, "#hedges")) && /Wording C: .*promptly/.test(await text(c.p, "#hedges")) && /Wording D: .*in good time.*acceptable/.test(await text(c.p, "#hedges")));
+  ok("hints: they say they are a word list and cite the demo", /word list, not a measurement/.test(await text(c.p, "#hedges")) && /142 out of 1,000/.test(await text(c.p, "#hedges")));
+  ok("hints: they do not block the pack (no problems listed, the id is shown)", (await c.p.locator("#problems li").count()) === 0 && /stored as/.test(await text(c.p, "#idline")));
+  await c.p.click("#ex2");
+  ok("hints: the precise refund rule shows none", await c.p.isHidden("#hedges"));
+  await c.p.fill("#w0", "Refund within 30 days if the item is unused, and as soon as possible after that.");
+  ok("hints: a typed wording is checked live", /Wording A: .*as soon as possible/.test(await text(c.p, "#hedges")) && !/Wording B/.test(await text(c.p, "#hedges")));
+  ok("hints: no script errors", c.errs.length === 0, c.errs.join(" | "));
+  await c.ctx.close();
+}
+{
+  const c = await newCase({ hasWallet: false });
+  await c.open(CONTRACT_Q);
+  await c.p.waitForSelector("#packs li a");
+  ok("compare: the form is shown when two measurements exist, older first by default", await c.p.isVisible("#compare") && (await c.p.locator("#cmp-a option").count()) === 2 && (await c.p.inputValue("#cmp-a")) === P1 && (await c.p.inputValue("#cmp-b")) === P2);
+  await c.p.click("#compare-form button");
+  await c.p.waitForSelector("#compare-out table.cmp");
+  ok("compare: the contract was asked for exactly these two, in this order", JSON.stringify(c.rpc.compareCalls) === JSON.stringify([[P1, P2]]));
+  const t = await text(c.p, "#compare-out");
+  ok("compare: a sentence and a table with both rules, both scores and the change", /steadier\. The score rose from 62 to 100 \(\+38\)/.test(t) && /Refund rule v1 \(vague\)/.test(t) && /Refund rule v2 \(30 days, unused\)/.test(t) && /Boundary cases/.test(t));
+  ok("compare: improvement is written in words, not only colour", /\+38\s*better/.test(t) && /-3\s*better/.test(t));
+  await c.p.selectOption("#cmp-b", P1);
+  await c.p.click("#compare-form button");
+  ok("compare: the same measurement twice is refused with a reason and asks the contract nothing", /two different/.test(await text(c.p, "#compare-out")) && c.rpc.compareCalls.length === 1);
+  await c.p.selectOption("#cmp-a", P2); await c.p.selectOption("#cmp-b", P1);
+  await c.p.click("#compare-form button");
+  await c.p.waitForFunction(() => /less steady/.test(document.getElementById("compare-out").textContent));
+  ok("compare: the other way round reads as less steady", /fell from 100 to 62/.test(await text(c.p, "#compare-out")) && /worse/.test(await text(c.p, "#compare-out")));
+  c.rpc.compare = () => null;
+  await c.p.click("#compare-form button");
+  ok("compare: an unknown id is said to be unknown", await waitText(c.p, "#compare-out", /not on this contract/));
+  c.rpc.compare = () => ({ nonsense: true });
+  await c.p.click("#compare-form button");
+  ok("compare: an unreadable answer is said to be unreadable", await waitText(c.p, "#compare-out", /cannot read/));
+  await c.p.fill("#openid", P2); await c.p.click("#openform button");
+  await c.p.waitForSelector("#cmp-prev");
+  c.rpc.compare = (a, b) => ({ first: { id: a, label: "Refund rule v1 (vague)", grade: "SHAKY", score_permille: 625, consistency_permille: 625, fidelity_permille: 625, boundary_cases: 3 }, second: { id: b, label: "Refund rule v2 (30 days, unused)", grade: "STEADY", score_permille: 1000, consistency_permille: 1000, fidelity_permille: 1000, boundary_cases: 0 }, delta: {} });
+  await c.p.click("#cmp-prev");
+  await c.p.waitForFunction(() => /steadier/.test(document.getElementById("compare-out").textContent));
+  ok("compare: an opened revision offers a one-click comparison with the version it revises", JSON.stringify(c.rpc.compareCalls.at(-1)) === JSON.stringify([P1, P2]) && (await c.p.inputValue("#cmp-a")) === P1 && (await c.p.inputValue("#cmp-b")) === P2);
+  ok("compare: no script errors, no write request", c.errs.length === 0 && !c.rpc.methods.includes("eth_sendTransaction"), c.errs.join(" | "));
+  await c.ctx.close();
+}
+{
+  const c = await newCase({ hasWallet: false, rpcInit: { page: { total: 1, items: [item(P1, "Refund rule v1 (vague)", "SHAKY", 625)] } } });
+  await c.open(CONTRACT_Q);
+  await c.p.waitForSelector("#packs li a");
+  ok("compare: with one measurement there is nothing to compare, so no form", await c.p.isHidden("#compare"));
+  await c.ctx.close();
+}
+{
+  const c = await newCase({ hasWallet: false });
+  await c.ctx.grantPermissions(["clipboard-read", "clipboard-write"], { origin: `http://localhost:${PORT}` });
+  await c.open();
+  ok("markdown: no copy button on the made-up sample", await c.p.isHidden("#report-actions"));
+  await c.p.goto(`http://localhost:${PORT}/index.html?poll=40&pack=${P2}${CONTRACT_Q}`); await c.p.waitForFunction(() => /Run 1 of up to 5/.test(document.getElementById("tunnel-caption").textContent));
+  ok("markdown: a copy button appears for a measured rule", await c.p.isVisible("#copy-md"));
+  await c.p.click("#copy-md");
+  ok("markdown: it says it copied", await waitText(c.p, "#copy-status", /Copied/));
+  const clip = await c.p.evaluate(() => navigator.clipboard.readText());
+  ok("markdown: the clipboard holds this rule's reading, its pack id and its contract", clip.startsWith("# Rule Wind Tunnel: Refund rule v2 (30 days, unused)") && clip.includes("`" + P2 + "`") && clip.toLowerCase().includes(CONTRACT.toLowerCase()) && /## Verdicts/.test(clip));
+  ok("markdown: no fallback box when copying worked", await c.p.isHidden("#md-fallback"));
+  await c.p.evaluate(() => { Object.defineProperty(navigator, "clipboard", { value: { writeText: () => Promise.reject(new Error("blocked")) }, configurable: true }); });
+  await c.p.click("#copy-md");
+  ok("markdown: if the browser refuses, the text is shown selected and the person is told", await c.p.isVisible("#md-fallback") && /copy it yourself/.test(await text(c.p, "#copy-status")) && (await c.p.inputValue("#md-fallback")).startsWith("# Rule Wind Tunnel:"));
+  await c.p.click("#ex1");
+  ok("markdown: opening nothing new leaves the page free of script errors", c.errs.length === 0, c.errs.join(" | "));
   await c.ctx.close();
 }
 

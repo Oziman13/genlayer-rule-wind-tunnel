@@ -58,6 +58,31 @@ PASS deep link to unreadable data: says so and falls back to the sample
 PASS unreachable node: the board says it could not read, and the sample still shows
 PASS recorded first view: a configured pack replaces the sample and the address bar is left alone
 PASS recorded first view: the repository link comes from the configuration
+PASS hints: nothing shown before anyone writes
+PASS hints: the vague refund rule is flagged wording by wording
+PASS hints: they say they are a word list and cite the demo
+PASS hints: they do not block the pack (no problems listed, the id is shown)
+PASS hints: the precise refund rule shows none
+PASS hints: a typed wording is checked live
+PASS hints: no script errors
+PASS compare: the form is shown when two measurements exist, older first by default
+PASS compare: the contract was asked for exactly these two, in this order
+PASS compare: a sentence and a table with both rules, both scores and the change
+PASS compare: improvement is written in words, not only colour
+PASS compare: the same measurement twice is refused with a reason and asks the contract nothing
+PASS compare: the other way round reads as less steady
+PASS compare: an unknown id is said to be unknown
+PASS compare: an unreadable answer is said to be unreadable
+PASS compare: an opened revision offers a one-click comparison with the version it revises
+PASS compare: no script errors, no write request
+PASS compare: with one measurement there is nothing to compare, so no form
+PASS markdown: no copy button on the made-up sample
+PASS markdown: a copy button appears for a measured rule
+PASS markdown: it says it copied
+PASS markdown: the clipboard holds this rule's reading, its pack id and its contract
+PASS markdown: no fallback box when copying worked
+PASS markdown: if the browser refuses, the text is shown selected and the person is told
+PASS markdown: opening nothing new leaves the page free of script errors
 PASS no wallet: connecting explains how to proceed
 PASS send: connected and complete, the button opens
 PASS send: ACCEPTED is shown as in progress
@@ -79,4 +104,4 @@ PASS connect: a wrong network is switched before anything else
 PASS send: if the wallet is on another network at send time, nothing is sent
 PASS no third-party requests: only localhost (fonts, scripts and styles are served by the page itself)
 
-80 passed, 0 failed
+105 passed, 0 failed

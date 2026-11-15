@@ -73,6 +73,11 @@
         <div class="readouts" id="readouts"></div>
         <p class="note" id="best-line"></p>
         <p class="note" id="drift-line"></p>
+        <div class="actions" id="report-actions" hidden>
+          <button class="btn small" type="button" id="copy-md">Copy this reading as Markdown</button>
+          <span class="copied" id="copy-status" role="status"></span>
+          <textarea id="md-fallback" class="md-fallback" readonly rows="8" aria-label="Report as Markdown" hidden></textarea>
+        </div>
       </div>
     </div>
   </div>
@@ -112,6 +117,16 @@
           <button class="btn primary" type="submit">Open</button>
         </form>
         <p class="status" id="board-status" hidden></p>
+        <div class="compare" id="compare" hidden>
+          <h3>Compare two measurements</h3>
+          <p class="hint">The contract puts the numbers of two measured rules side by side. Pick the older version first.</p>
+          <form class="compare-form" id="compare-form">
+            <div><label for="cmp-a">First</label><select id="cmp-a"></select></div>
+            <div><label for="cmp-b">Second</label><select id="cmp-b"></select></div>
+            <button class="btn primary" type="submit">Compare</button>
+          </form>
+          <div id="compare-out" aria-live="polite"></div>
+        </div>
       </div>
     </div>
   </div>
@@ -155,6 +170,7 @@
             <span class="label">Wordings <span class="counter" id="wc"></span></span>
             <div id="wordings"></div>
             <button class="mini" type="button" id="addw">Add a wording</button>
+            <div class="hedges" id="hedges" hidden aria-live="polite"></div>
           </div>
         </div>
         <div class="step" id="step-3" data-n="3">

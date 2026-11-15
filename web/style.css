@@ -321,3 +321,26 @@ input[type=text]:focus, textarea:focus, select:focus { outline: none; border-col
   .step::after { display: none; }
   .step-h { font-size: 22px; }
 }
+
+/* ---- report actions, wording hints, comparison (v0.2.0) ---- */
+.actions { margin-top: 22px; display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: center; }
+.actions .copied { color: var(--ink-2); font-size: 16px; }
+.md-fallback { flex: 1 1 100%; font: 400 13.5px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace; }
+.hedges { margin: 16px 0 0; padding: 14px 16px; border-left: 4px solid var(--s4); background: var(--paper-2); font-size: 16px; max-width: 70ch; }
+.hedges ul { margin: 8px 0; padding-left: 20px; }
+.hedges q { font-style: italic; }
+.hedges p { margin: 6px 0 0; color: var(--ink-2); font-size: 15.5px; }
+.compare { margin-top: 44px; }
+.compare h3 { margin-bottom: 4px; }
+.compare-form { display: flex; flex-wrap: wrap; gap: 14px; align-items: end; margin: 14px 0 6px; }
+.compare-form > div { flex: 1 1 260px; min-width: 0; }
+.compare-form label { display: block; font: 700 15px/1.2 var(--display); margin-bottom: 6px; }
+.cmp-line { font: 700 19px/1.35 var(--display); margin: 20px 0 12px; max-width: 62ch; }
+.cmp { width: 100%; border-collapse: collapse; font-size: 16px; }
+.cmp th, .cmp td { padding: 10px 10px; border-bottom: 1px solid var(--rule); text-align: right; }
+.cmp th:first-child, .cmp tbody th { text-align: left; font: 700 15px/1.3 var(--display); }
+.cmp thead th { font: 700 14px/1.3 var(--display); color: var(--ink-2); vertical-align: bottom; }
+.cmp .cw { font: 700 13px var(--display); margin-left: 6px; }
+.cmp tr.t-better td:last-child { color: var(--teal); }
+.cmp tr.t-worse td:last-child { color: var(--flame); }
+@media (max-width: 560px) { .cmp th, .cmp td { padding: 9px 6px; font-size: 15px; } }
