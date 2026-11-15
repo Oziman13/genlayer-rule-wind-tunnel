@@ -13,6 +13,8 @@ Rule Wind Tunnel is a test rig for that. You submit a **pack**: three to five wo
 
 Status: **v0.1.1, Studionet only.** See [Live run](#live-run) and [What it does not show](#what-it-does-not-show).
 
+For reviewers: start with [`docs/REVIEWER_EVIDENCE.md`](docs/REVIEWER_EVIDENCE.md) (every transaction, hash and number, checkable on the explorer). Design: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md), [`docs/CONSENSUS.md`](docs/CONSENSUS.md), [`docs/THREAT_MODEL.md`](docs/THREAT_MODEL.md). Tests and what they cover: [`docs/VERIFICATION.md`](docs/VERIFICATION.md). Deployment, including the failed Bradbury attempt: [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md).
+
 ## How a measurement works
 
 | Step | What happens | Who has to agree |
@@ -156,6 +158,9 @@ tests/glsim/             local-network tests (rpc.py starts a 5-validator glsim)
 tests/browser/           logic and page tests (Playwright)
 web/                     the page (index.html, style.css, src/, app.js, fonts/)
 fixtures/                demo packs (pretty, and *.min.json: paste the text as it is, without outer quotes, into `measure` in GenLayer Studio)
-scripts/                 mutation check of the v0.1.1 changes
-evidence/                test output and mutation checks
+scripts/                 mutation check of the v0.1.1 changes; verify-deployed-source.mjs (on-chain source vs this repository)
+evidence/                test output, mutation checks, source-parity result
+deployed/                the exact source stored on-chain for the Studionet contract (22,321 bytes)
+docs/                    architecture, consensus, threat model, verification, deployment, reviewer evidence
+.github/workflows/       CI: bundle check, browser tests, direct tests, parity script
 ```

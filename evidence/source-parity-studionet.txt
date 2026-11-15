@@ -1,0 +1,11 @@
+Source parity check, Studionet contract 0xF319FDf761A71Eb81D8FD8bcaBC9d03e155270E5
+Date: 2026-11-15
+Method: JSON-RPC gen_getContractCode on https://studio.genlayer.com/api, base64-decoded, SHA-256 of the bytes.
+
+on-chain          22321 bytes  sha256 a96c5dcb116a25067f5c0c65421bfdd8b1d4e3885845c18ba76e194f899be7ea
+deployed/rule_wind_tunnel.studionet-0xF319.py  22321 bytes  sha256 a96c5dcb116a25067f5c0c65421bfdd8b1d4e3885845c18ba76e194f899be7ea
+on-chain == deployed file (byte for byte): YES
+
+contracts/rule_wind_tunnel.py  22323 bytes  sha256 b0563f4cd8ea298340949ef6c467e290b1121db137a4cb88b534115be00cfec0
+Difference from the deployed file: header comment layout only (runner line first, one blank line, then the version line).
+Re-run: node scripts/verify-deployed-source.mjs
