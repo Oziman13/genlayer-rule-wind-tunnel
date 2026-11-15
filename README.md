@@ -19,6 +19,7 @@ For reviewers: start with [`docs/REVIEWER_EVIDENCE.md`](docs/REVIEWER_EVIDENCE.m
 
 * Demo video (1 min 21 s): https://youtu.be/OPT3aU90AqM
 * Live page: https://oziman13.github.io/genlayer-rule-wind-tunnel/
+* Article: [The sentence is the bug: measuring a rule before a GenLayer contract has to judge it](https://medium.com/@ozan.t1992/the-sentence-is-the-bug-measuring-a-rule-before-a-genlayer-contract-has-to-judge-it-3e46d343aa10)
 
 The screenshots below were taken from `web/` served locally and opened **without a contract address**, so the page shows its built-in sample table. The page labels that sample as made-up data, not as a network measurement. The real Studionet runs (vague rule 142 out of 1,000, revised rule 857) are in [`docs/REVIEWER_EVIDENCE.md`](docs/REVIEWER_EVIDENCE.md).
 
