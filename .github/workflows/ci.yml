@@ -1,0 +1,38 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  web:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Bundle is up to date
+        run: |
+          npm run build
+          git diff --exit-code web/app.js
+      - name: Install Chromium for the page tests
+        run: npx playwright-core install --with-deps chromium
+      - run: node tests/browser/logic.test.mjs
+      - run: node tests/browser/page.test.mjs
+      - name: Source parity script (offline check against the deployed file)
+        run: RWT_CODE_FILE=deployed/rule_wind_tunnel.studionet-0xF319.py node scripts/verify-deployed-source.mjs
+
+  contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install genlayer-test==0.29.2 pytest
+      - run: python -m pytest tests/direct -q
