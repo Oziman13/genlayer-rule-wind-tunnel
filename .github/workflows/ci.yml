@@ -35,4 +35,16 @@ jobs:
         with:
           python-version: "3.12"
       - run: pip install genlayer-test==0.29.2 pytest
+      # genlayer-test 0.29.2 downloads GenVM from the repository's "latest" release, whose asset name it no longer
+      # finds (HTTP 404). The tests were written and run against GenVM v0.2.12, so that release is fetched explicitly
+      # into the cache directory genlayer-test reads (same file, 216,630,904 bytes).
+      - uses: actions/cache@v4
+        with:
+          path: ~/.cache/gltest-direct
+          key: genvm-universal-v0.2.12
+      - name: Fetch the pinned GenVM release
+        run: |
+          mkdir -p ~/.cache/gltest-direct
+          f=~/.cache/gltest-direct/genvm-universal-v0.2.12.tar.xz
+          [ -f "$f" ] || curl -fL --retry 3 -o "$f" https://github.com/genlayerlabs/genvm/releases/download/v0.2.12/genvm-universal.tar.xz
       - run: python -m pytest tests/direct -q
