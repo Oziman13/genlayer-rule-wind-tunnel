@@ -391,6 +391,9 @@ input[type=text]:focus, textarea:focus, select:focus {
 .starter b { display: block; font: 700 17px/1.2 var(--display); margin-bottom: 2px; }
 .starter span { color: var(--ink-2); font-size: 16px; display: block; max-width: 46ch; }
 .starter-btns { display: flex; flex-wrap: wrap; gap: 8px; }
+.packfile { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; align-items: center; }
+.packfile:focus-within { outline: 3px solid var(--focus); outline-offset: 3px; }
+.file-input { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
 .step { position: relative; padding: 0 0 36px 56px; }
 .step::before { content: attr(data-n); position: absolute; left: 0; top: 0; width: 36px; height: 36px; background: var(--ink); color: var(--paper); font: 800 16px/1 var(--display); display: grid; place-items: center; }
 .step::after { content: ""; position: absolute; left: 17px; top: 42px; bottom: 8px; width: 1px; background: var(--rule); }
@@ -468,7 +471,7 @@ input[type=text]:focus, textarea:focus, select:focus {
   .gauge .word { font-size: 40px; }
   .openbyid, .compare-form, .walletline, .cta, .starter-btns { flex-direction: column; align-items: stretch; }
   .openbyid input { flex: 0 0 auto; }
-  .openbyid .btn, .compare-form .btn, .cta .btn, .starter-btns .btn { width: 100%; }
+  .openbyid .btn, .compare-form .btn, .cta .btn, .starter-btns .btn, .packfile .btn { width: 100%; }
   .seg { display: flex; width: 100%; }
   .seg label { flex: 1 1 0; }
   .seg span { text-align: center; padding: 10px 6px; }

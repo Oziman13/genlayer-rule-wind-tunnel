@@ -111,6 +111,14 @@ PASS connect: a wrong network is switched before anything else
 PASS send: if the wallet is on another network at send time, nothing is sent
 PASS board empty: says nothing is measured yet and how to start
 PASS send: while validators read, a timer runs and the page says to leave the tab open
+PASS revise: the made-up sample has no revise button
+PASS revise: a measured rule offers the button
+PASS revise: fills every field and sets previous to the open rule
+PASS revise: the measure form is on screen
+PASS pack file: export then import gives the same pack id
+PASS pack file: a file that is not JSON is refused and the form stays
+PASS pack file: the wrong shape is refused with a message
+PASS pack file: too many wordings is refused with a message
 PASS no third-party requests: only localhost (fonts, scripts and styles are served by the page itself)
 
-114 passed, 0 failed
+122 passed, 0 failed

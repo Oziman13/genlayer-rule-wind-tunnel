@@ -497,6 +497,45 @@ async function ready(c) {
   await c.ctx.close();
 }
 
+// ---- revise a measured rule, and a pack file that stays on this device
+{
+  const c = await newCase({ hasWallet: false });
+  await c.open();
+  ok("revise: the made-up sample has no revise button", await c.p.isHidden("#revise"));
+  await c.ctx.close();
+}
+{
+  const c = await newCase({ hasWallet: false });
+  await c.open(`&pack=${P2}${CONTRACT_Q}`);
+  await c.p.waitForFunction(() => /Run 1 of up to 5/.test(document.getElementById("tunnel-caption").textContent));
+  ok("revise: a measured rule offers the button", await c.p.isVisible("#revise"));
+  const calls = c.rpc.methods.length;
+  await c.p.evaluate(() => window.scrollTo(0, 0));
+  await c.p.click("#revise");
+  ok("revise: fills every field and sets previous to the open rule", (await c.p.inputValue("#f-label")) === "Refund rule v2 (30 days, unused) v2" && (await c.p.inputValue("#f-previous")) === P2 && (await c.p.locator("#wordings .row").count()) === 4 && (await c.p.locator("#cases .row").count()) === 8 && /reasonable time/.test(await c.p.inputValue("#w0")) && (await c.p.locator('input[name="intent0"][value="COMPLIES"]').isChecked()) && (await c.p.locator('input[name="intent3"][value="VIOLATES"]').isChecked()) && (await c.p.locator('input[name="intent7"][value="OPEN"]').isChecked()) && c.rpc.methods.length === calls);
+  ok("revise: the measure form is on screen", await c.p.waitForFunction(() => { const r = document.getElementById("f-label").getBoundingClientRect(); return r.top >= 0 && r.top < window.innerHeight; }, null, { timeout: 8000 }).then(() => true).catch(() => false));
+  await c.ctx.close();
+}
+{
+  const c = await newCase({ hasWallet: false });
+  await c.open();
+  await c.p.click("#ex1");
+  await c.p.waitForFunction(() => /stored as/.test(document.getElementById("idline").textContent));
+  const [download] = await Promise.all([c.p.waitForEvent("download"), c.p.click("#download-pack")]);
+  const raw = fs.readFileSync(await download.path(), "utf8");
+  await c.p.fill("#f-label", "zzzzzzzz");
+  await c.p.setInputFiles("#load-pack", { name: "rule.json", mimeType: "application/json", buffer: Buffer.from(raw) });
+  ok("pack file: export then import gives the same pack id", await waitText(c.p, "#idline", new RegExp(V1_ID)) && (await c.p.inputValue("#f-label")) === "Refund rule v1 (vague)" && /Nothing was uploaded/.test(await text(c.p, "#file-status")));
+  await c.p.setInputFiles("#load-pack", { name: "bad.json", mimeType: "application/json", buffer: Buffer.from("{") });
+  ok("pack file: a file that is not JSON is refused and the form stays", await waitText(c.p, "#file-status", /not JSON/) && (await c.p.inputValue("#f-label")) === "Refund rule v1 (vague)");
+  await c.p.setInputFiles("#load-pack", { name: "shape.json", mimeType: "application/json", buffer: Buffer.from("[]") });
+  ok("pack file: the wrong shape is refused with a message", await waitText(c.p, "#file-status", /wrong shape/));
+  const many = { label: "Refund rule extra", wordings: Array.from({ length: 8 }, (_, i) => `Wording ${i} is long enough to be a wording.`), cases: Array.from({ length: 6 }, (_, i) => ({ text: `Case number ${i} is long enough to count.`, intent: "OPEN" })) };
+  await c.p.setInputFiles("#load-pack", { name: "many.json", mimeType: "application/json", buffer: Buffer.from(JSON.stringify(many)) });
+  ok("pack file: too many wordings is refused with a message", await waitText(c.p, "#file-status", /too many wordings/));
+  await c.ctx.close();
+}
+
 // ---- 5. privacy: the page only ever talks to its own origin and the chain node
 ok("no third-party requests: only localhost (fonts, scripts and styles are served by the page itself)", [...hosts].every(h => h === "localhost" || h === "studio.genlayer.com"), [...hosts].join(","));
 

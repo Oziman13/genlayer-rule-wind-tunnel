@@ -6,8 +6,8 @@ Commands run from the repository root. Outputs are in `evidence/`.
 |---|---|---|---|
 | Contract, direct mode (model mocked) | `python3 -m pytest tests/direct` | 174 passed | `evidence/direct-tests.txt` |
 | Contract on a local 5-validator network (glsim, model mocked) | `python3 -m pytest tests/glsim` | 6 passed | `evidence/glsim-tests.txt` |
-| Pack id and metric logic in JavaScript | `node tests/browser/logic.test.mjs` | 76 checks passed (v0.2.0; 54 at v0.1.1) | `evidence/browser-logic-tests.txt` |
-| The page with a mock wallet and node | `node tests/browser/page.test.mjs` | 114 checks passed (105 at v0.2.0; 80 at v0.1.1) | `evidence/browser-page-tests.txt` |
+| Pack id and metric logic in JavaScript | `node tests/browser/logic.test.mjs` | 84 checks passed (76 at v0.3.0; 54 at v0.1.1) | `evidence/browser-logic-tests.txt` |
+| The page with a mock wallet and node | `node tests/browser/page.test.mjs` | 122 checks passed (114 at v0.3.0; 80 at v0.1.1) | `evidence/browser-page-tests.txt` |
 | Mutation check of the v0.1.1 changes | `python3 scripts/mutation_check_v011.py` | 11 of 11 caught | `evidence/mutation-checks.txt` |
 | Mutation check of v0.1.0 | (script not kept) | 84 of 88 caught, 4 equivalent mutants | `evidence/mutation-checks-v0.1.0.txt` |
 | Deployed source equals repository | `node scripts/verify-deployed-source.mjs` | on-chain bytes equal `deployed/` file | `evidence/source-parity-studionet.txt` |
@@ -28,6 +28,7 @@ CI (`.github/workflows/ci.yml`) re-runs the direct tests, the browser tests, the
 | Page | JS pack id equals the contract's (three packs, one non-ASCII); page limits equal the contract's constants read from the source; connect, wrong network, declined signature, undetermined and refused transactions, settled-but-nothing-stored, ambiguous send blocks a second send |
 | Page, v0.2.0 | vague-word hints (flagged on the vague refund rule, none on the revised one, whole words only, never blocking); comparison (contract asked for exactly the chosen two in order, same id twice refused without a call, unknown id, unreadable answer, one-click revision comparison, no form with one measurement); Markdown copy (sample has no button, clipboard holds the reading, fallback box when the browser refuses, pipes and line breaks cannot break the table) |
 | Page, redesign | skip link visible on keyboard focus; body text, chamber lede and hints at least 4.5 to 1; a focused field keeps its ring; 360px page does not scroll sideways; empty board says how to start; a short pack id says to paste the full id; while validators read, the track is busy and a timer runs |
+| Page, v0.4.0 | revise copies label (with a v2 hint), wordings, case intents and previous from the open report and asks the contract nothing new; a pack file round-trips to the same id; a file that is not JSON, the wrong shape, or too long is refused and the form stays |
 
 ## What is not verified
 

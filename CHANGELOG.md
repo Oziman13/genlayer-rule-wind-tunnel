@@ -1,5 +1,22 @@
 # Changelog
 
+## 0.4.0 (web page; the contract stays at v0.1.1), 2026-11-19
+
+The contract on Studionet is unchanged. No new runtime dependency, no tracking, and the fonts stay the ones in `web/fonts`.
+
+### Added
+
+- **Revise this rule.** When a measured rule is open, the button fills the measure form from the report the page already read (`get_report_json`). The name gains a " v2" hint you can edit, the wordings and cases come across with their intents, and "Replaces an earlier measurement" selects that rule. The page then scrolls to the form. The made-up sample has no button. Nothing new is asked of the contract.
+- **Pack file.** "Download this rule as JSON" saves the current draft in the normalised shape the page sends to the contract (label, wordings, cases with text and intent, previous). "Load a rule from a JSON file" reads that file on this device and checks it with the same `problems()` rules as the form. A file that is not JSON, has the wrong shape, or has too many wordings or cases is refused in plain language and does not replace the form. Nothing is uploaded.
+
+### Tests
+
+- Logic checks 76 to 84. Page checks 114 to 122 (206 in all). New checks cover the revision draft, a file round trip with the same pack id, and refusals for a bad file.
+
+### Not done
+
+- No change to `contracts/rule_wind_tunnel.py`, `web/config.js`, the contract address, or the network.
+
 ## 0.3.0 (web page redesign; the contract stays at v0.1.1), 2026-11-19
 
 The contract on Studionet is unchanged. This is a redesign of the page only (`web/`, `tests/browser/page.test.mjs`).

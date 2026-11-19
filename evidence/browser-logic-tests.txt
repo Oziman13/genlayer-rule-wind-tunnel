@@ -74,5 +74,13 @@ PASS markdown: a clean report says there were no boundary cases
 PASS config: a contract address is set
 PASS config: the first view is the live revised pack
 PASS id: revised refund pack equals the id the contract returned on Studionet
+PASS revise: label keeps a v2 hint and previous is the measured id
+PASS revise: every wording and case is copied, intents included
+PASS pack file: export then import is the same pack id
+PASS pack file: text that is not JSON is refused
+PASS pack file: the wrong shape is refused
+PASS pack file: too many wordings is refused before it is applied
+PASS pack file: too many cases is refused
+PASS pack file: a short wording uses the same check as the form
 
-76 passed, 0 failed
+84 passed, 0 failed

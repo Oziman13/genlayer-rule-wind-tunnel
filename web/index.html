@@ -79,6 +79,7 @@
         <p class="note" id="drift-line"></p>
         <div class="actions" id="report-actions" hidden>
           <button class="btn small" type="button" id="copy-md">Copy this reading as Markdown</button>
+          <button class="btn small" type="button" id="revise">Revise this rule</button>
           <span class="copied" id="copy-status" role="status"></span>
           <textarea id="md-fallback" class="md-fallback" readonly rows="8" aria-label="Report as Markdown" hidden></textarea>
         </div>
@@ -155,6 +156,12 @@
             <button class="btn small" type="button" id="ex1">Vague refund rule</button>
             <button class="btn small" type="button" id="ex2">Revised version</button>
           </div>
+          <div class="packfile">
+            <button class="btn small" type="button" id="download-pack">Download this rule as JSON</button>
+            <label class="btn small" for="load-pack">Load a rule from a JSON file</label>
+            <input class="file-input" id="load-pack" type="file" accept=".json,application/json">
+          </div>
+          <p class="status" id="file-status" role="status" hidden></p>
         </div>
         <div class="step" id="step-1" data-n="1">
           <h3 class="step-h">Name the rule</h3>

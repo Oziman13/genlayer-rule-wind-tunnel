@@ -11,6 +11,7 @@ import {
   VERDICT_WORD, WORDING_LETTERS,
 } from "./view.js";
 import { hedgeNotes } from "./hedges.js";
+import { revisionDraft, interpretPackFile } from "./pack-file.js";
 import { parseCompare, compareRows, compareLine } from "./compare.js";
 import { reportMarkdown } from "./report-md.js";
 import sample from "./sample.js";
@@ -360,18 +361,81 @@ const EXAMPLES = {
     wordings: ["Approve a refund when the item reaches the seller within 30 days of delivery and has not been used.", "A refund is valid only if (1) the item is back with the seller no later than 30 days after delivery and (2) it shows no signs of use.", "Refund if the item is returned within 30 days of delivery and unused. Otherwise do not refund.", "The buyer gets a refund when the return arrives within thirty days of the delivery date and the product is unused."],
   },
 };
+function selectPrevious(id, label) {
+  const sel = $("f-previous");
+  if (id && ![...sel.options].some(o => o.value === id)) {
+    const opt = document.createElement("option");
+    opt.value = id;
+    opt.textContent = label ? `${label} (${shortId(id)})` : `Pack ${shortId(id)}`;
+    sel.appendChild(opt);
+  }
+  sel.value = id && [...sel.options].some(o => o.value === id) ? id : "";
+}
+
+function applyDraft(next, { focus = false } = {}) {
+  draft.label = next.label;
+  draft.previous = next.previous || "";
+  draft.wordings = next.wordings.slice();
+  draft.cases = next.cases.map(c => ({ text: c.text, intent: c.intent }));
+  $("f-label").value = draft.label;
+  selectPrevious(draft.previous, next.previousLabel || "");
+  if (!$("f-previous").value) draft.previous = "";
+  renderRows();
+  if (focus) $("f-label").focus();
+}
+
 function fill(which) {
   const v1 = EXAMPLES.v1;
   const ex = which === "v1" ? v1 : { ...v1, ...EXAMPLES.v2 };
-  draft.label = ex.label; draft.previous = "";
-  draft.wordings = ex.wordings.slice();
-  draft.cases = v1.cases.map(([text, intent]) => ({ text, intent }));
-  $("f-label").value = draft.label; $("f-previous").value = "";
-  renderRows();
-  $("f-label").focus();
+  applyDraft({
+    label: ex.label, previous: "",
+    wordings: ex.wordings,
+    cases: v1.cases.map(([text, intent]) => ({ text, intent })),
+  }, { focus: true });
 }
 $("ex1").onclick = () => fill("v1");
 $("ex2").onclick = () => fill("v2");
+
+function fileNote(msg, cls = "") {
+  const el = $("file-status");
+  el.hidden = !msg;
+  el.className = "status " + cls;
+  el.textContent = msg || "";
+}
+
+$("revise").addEventListener("click", () => {
+  if (!state.report || state.source === "sample") return;
+  applyDraft({ ...revisionDraft(state.report), previousLabel: state.report.pack.label }, { focus: true });
+  fileNote("");
+  const reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  $("measure").scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "start" });
+});
+
+$("download-pack").addEventListener("click", () => {
+  const blob = new Blob([packJson(draft)], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "rule.json";
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+});
+
+$("load-pack").addEventListener("change", async () => {
+  const input = $("load-pack");
+  const file = input.files && input.files[0];
+  input.value = "";
+  if (!file) return;
+  let text;
+  try { text = await file.text(); }
+  catch { fileNote("Could not read that file on this device. Choose it again.", "bad"); return; }
+  const result = interpretPackFile(text);
+  if (result.error) { fileNote(result.error, "bad"); return; }
+  applyDraft(result.draft, { focus: true });
+  fileNote("Loaded from this device. Nothing was uploaded. The id below is the one the contract will store.", "ok");
+});
 
 // ---------------------------------------------------------------- wallet and sending
 

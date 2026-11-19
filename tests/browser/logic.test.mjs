@@ -10,6 +10,7 @@ import { streamSvg, gateX, offset, pathFor, LANE_Y } from "../../web/src/chart.j
 import { findHedges, hedgeNotes, HEDGES } from "../../web/src/hedges.js";
 import { parseCompare, compareRows, compareLine } from "../../web/src/compare.js";
 import { reportMarkdown } from "../../web/src/report-md.js";
+import { revisionDraft, interpretPackFile } from "../../web/src/pack-file.js";
 import sample from "../../web/src/sample.js";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
@@ -140,6 +141,21 @@ const LIVE_V2 = "ad2fccd96e6e3536fe98afa7e268d979a384e2bd190f88c839eee882e87d054
 ok("config: a contract address is set", /CONTRACT: "0x[0-9a-fA-F]{40}"/.test(cfg));
 ok("config: the first view is the live revised pack", cfg.includes(`FIRST_PACK: "${LIVE_V2}"`));
 ok("id: revised refund pack equals the id the contract returned on Studionet", await packId(fx("refund-v2-precise.json"), subtle) === LIVE_V2);
+
+// ---- revise a measured rule, and a pack file that never leaves the browser
+const revised = revisionDraft(sample);
+ok("revise: label keeps a v2 hint and previous is the measured id", revised.label === sample.pack.label + " v2" && revised.previous === sample.id);
+ok("revise: every wording and case is copied, intents included", JSON.stringify(revised.wordings) === JSON.stringify(sample.pack.wordings) && revised.cases.length === sample.pack.cases.length && revised.cases.every((c, i) => c.text === sample.pack.cases[i].text && c.intent === sample.pack.cases[i].intent));
+const exported = packJson(v2);
+const imported = interpretPackFile(exported);
+ok("pack file: export then import is the same pack id", imported.draft && await packId(imported.draft, subtle) === await packId(v2, subtle));
+ok("pack file: text that is not JSON is refused", /not JSON/.test(interpretPackFile("{").error || ""));
+ok("pack file: the wrong shape is refused", /wrong shape/.test(interpretPackFile("[]").error || "") && /wrong shape/.test(interpretPackFile('{"label":"A name"}').error || ""));
+const tooMany = { label: "Refund rule extra", wordings: Array.from({ length: 8 }, (_, i) => `Wording ${i} is long enough to be a wording.`), cases: v1.cases };
+ok("pack file: too many wordings is refused before it is applied", /too many wordings/.test(interpretPackFile(JSON.stringify(tooMany)).error || ""));
+const tooManyCases = { label: v1.label, wordings: v1.wordings, cases: v1.cases.concat(v1.cases) };
+ok("pack file: too many cases is refused", /too many cases/.test(interpretPackFile(JSON.stringify(tooManyCases)).error || ""));
+ok("pack file: a short wording uses the same check as the form", /needs 20 to 600 characters/.test(interpretPackFile(JSON.stringify({ ...v1, wordings: ["too short", ...v1.wordings.slice(1)] })).error || ""));
 
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);

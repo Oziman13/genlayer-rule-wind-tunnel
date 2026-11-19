@@ -8,10 +8,10 @@ Rule Wind Tunnel is a test rig for that. You submit a **pack**: three to five wo
 
 * `contracts/rule_wind_tunnel.py` — the Intelligent Contract (one Python file, no funds, no web access).
 * `web/` — a static page that reads the chain and sends measurements from your own wallet. No keys, no third-party requests, fonts self-hosted.
-* `tests/` — 174 direct-mode tests, 6 local-network tests, 190 browser/logic checks (76 logic, 114 page), and a mutation check of the contract.
+* `tests/` — 174 direct-mode tests, 6 local-network tests, 206 browser/logic checks (84 logic, 122 page), and a mutation check of the contract.
 * `fixtures/` — the demo packs used in the tests and in the live run (a vague refund rule and its revision).
 
-Status: **web page v0.3.0, contract v0.1.1 (unchanged), Studionet only.** What changed in the page since the first release is in [`CHANGELOG.md`](CHANGELOG.md). See [Live run](#live-run) and [What it does not show](#what-it-does-not-show).
+Status: **web page v0.4.0, contract v0.1.1 (unchanged), Studionet only.** What changed in the page since the first release is in [`CHANGELOG.md`](CHANGELOG.md). See [Live run](#live-run) and [What it does not show](#what-it-does-not-show).
 
 For reviewers: start with [`docs/REVIEWER_EVIDENCE.md`](docs/REVIEWER_EVIDENCE.md) (every transaction, hash and number, checkable on the explorer). Design: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md), [`docs/CONSENSUS.md`](docs/CONSENSUS.md), [`docs/THREAT_MODEL.md`](docs/THREAT_MODEL.md). Tests and what they cover: [`docs/VERIFICATION.md`](docs/VERIFICATION.md). Deployment, including the failed Bradbury attempt: [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md).
 
@@ -131,6 +131,8 @@ Since v0.2.0 the page also:
 * **compares two measurements** side by side, using the contract's `compare_json` (which earlier versions of the page never called), with a one-click comparison between a rule and the version it revises;
 * **points at vague wording while you write** ("reasonable", "promptly", "soon" and about fifty other words that leave a model room to guess). It is a word list, not a measurement, and it never blocks a measurement;
 * **copies a measured reading as Markdown** (grade, numbers, wordings, the table of verdicts, boundary cases, pack id and contract) for a pull request or a design note.
+
+Since v0.4.0 the page also lets you **revise an open measurement** into the form (name, wordings, cases, and the earlier pack it replaces) and **save or load that draft as a JSON file** on your own device. A bad file is refused. Nothing is uploaded.
 
 None of this changes the contract: the deployed bytes are still the v0.1.1 file in `deployed/`.
 
