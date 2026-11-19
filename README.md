@@ -11,7 +11,7 @@ Rule Wind Tunnel is a test rig for that. You submit a **pack**: three to five wo
 * `tests/` — 174 direct-mode tests, 6 local-network tests, 190 browser/logic checks (76 logic, 114 page), and a mutation check of the contract.
 * `fixtures/` — the demo packs used in the tests and in the live run (a vague refund rule and its revision).
 
-Status: **web page v0.2.0, contract v0.1.1 (unchanged), Studionet only.** What changed in the page since the first release is in [`CHANGELOG.md`](CHANGELOG.md). See [Live run](#live-run) and [What it does not show](#what-it-does-not-show).
+Status: **web page v0.3.0, contract v0.1.1 (unchanged), Studionet only.** What changed in the page since the first release is in [`CHANGELOG.md`](CHANGELOG.md). See [Live run](#live-run) and [What it does not show](#what-it-does-not-show).
 
 For reviewers: start with [`docs/REVIEWER_EVIDENCE.md`](docs/REVIEWER_EVIDENCE.md) (every transaction, hash and number, checkable on the explorer). Design: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md), [`docs/CONSENSUS.md`](docs/CONSENSUS.md), [`docs/THREAT_MODEL.md`](docs/THREAT_MODEL.md). Tests and what they cover: [`docs/VERIFICATION.md`](docs/VERIFICATION.md). Deployment, including the failed Bradbury attempt: [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md).
 

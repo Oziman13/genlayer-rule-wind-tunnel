@@ -9,10 +9,12 @@ PASS first view: the page title is the product name
 PASS first view: no script errors
 PASS first view: no key input anywhere, nothing stored
 PASS first view: no network call to any chain node
+PASS keyboard: the skip link is on screen when focused
 PASS gate click: detail shows that case and each wording's verdict
 PASS gate click: the gate is marked open
 PASS keyboard: arrow moves to the next gate and reads it
 PASS keyboard: arrow left goes back
+PASS contrast: body text, the stage lede and hints clear 4.5 to 1
 PASS table: one row per wording plus the intended row, all 8 cases
 PASS table: verdicts are words, not only colours
 PASS legend lists the four wordings
@@ -22,9 +24,13 @@ PASS mobile: the page does not scroll sideways
 PASS mobile: the chart scrolls inside its own frame and says so
 PASS mobile: the wordmark stays on one line
 PASS mobile: the open table scrolls inside its frame, not the page
+PASS mobile 360: the page does not scroll sideways and the wordmark stays one line
+PASS mobile 360: the chart still says to swipe
+PASS mobile 360: the measure form fits the screen
 PASS dark scheme: paper turns dark and text stays readable
 PASS composer: starts with four wordings and eight cases
 PASS composer: no problems are shown before anyone types
+PASS keyboard: a focused field keeps a visible ring
 PASS composer: the vague example fills every box and the page shows the id the contract will compute
 PASS composer: a complete pack shows no problems
 PASS composer: intents are carried into the radio groups
@@ -51,6 +57,7 @@ PASS open a pack: drift line says it was measured once
 PASS no revision chart for a first version
 PASS revision chart: both versions, oldest first, scores shown
 PASS open by id: a malformed id is explained
+PASS open by id: the malformed-id error says how to fix it
 PASS open by id: an unknown id is said to be unknown
 PASS no wallet: no write request was made
 PASS deep link: ?pack= opens that measurement on load
@@ -102,6 +109,8 @@ PASS reload: sending stays locked while it is unresolved
 PASS reload: when the account's count shows it never went out, the record is cleared
 PASS connect: a wrong network is switched before anything else
 PASS send: if the wallet is on another network at send time, nothing is sent
+PASS board empty: says nothing is measured yet and how to start
+PASS send: while validators read, a timer runs and the page says to leave the tab open
 PASS no third-party requests: only localhost (fonts, scripts and styles are served by the page itself)
 
-105 passed, 0 failed
+114 passed, 0 failed

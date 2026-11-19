@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.3.0 (web page redesign; the contract stays at v0.1.1), 2026-11-19
 
 The contract on Studionet is unchanged. This is a redesign of the page only (`web/`, `tests/browser/page.test.mjs`).
 
@@ -20,6 +20,7 @@ The contract on Studionet is unchanged. This is a redesign of the page only (`we
 
 ### Not done
 
+- `package.json` version is now 0.3.0.
 - No change to `contracts/rule_wind_tunnel.py`, `web/config.js`, the contract address, or the network.
 
 ## 0.2.0 (web page; the contract stays at v0.1.1)
