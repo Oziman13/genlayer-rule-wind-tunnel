@@ -1,5 +1,27 @@
 # Changelog
 
+## Unreleased
+
+The contract on Studionet is unchanged. This is a redesign of the page only (`web/`, `tests/browser/page.test.mjs`).
+
+### Changed
+
+- The page is drawn as a test section: a dark chamber, airflow lines through gates, and a paper log underneath. Layout, type and colour are new. The same self-hosted fonts are used. No new runtime dependency, no tracking, no remote font.
+- Mobile layout at 360px: the page does not scroll sideways, the measure form and board stack, and the chart still scrolls inside its own frame. The pack-id box stays one line high.
+- An unexpected error while measuring no longer says nothing was sent. It tells you to reload and check whether a signed measurement was recorded.
+- Keyboard: the skip link appears when focused, fields keep a visible focus ring, and contrast of body text, the chamber lede and hints is at least 4.5 to 1. Motion is removed when the system asks for reduced motion.
+- Empty board and empty boundary say what is missing and what to do next.
+- Errors name the failure and a next step: a short pack id, an unknown id, an unreadable answer, a failed board read, a failed comparison, a missing wallet approval, and a send that did not go out.
+- While validators read the cases, the progress line is marked busy, a timer runs, and a note says to leave the tab open.
+
+### Tests
+
+- Page checks 105 to 114. Logic checks stay at 76. New checks cover the skip link, contrast, the focus ring, a 360px screen, the empty board, a pack id that says how to fix it, and the timer while validators read.
+
+### Not done
+
+- No change to `contracts/rule_wind_tunnel.py`, `web/config.js`, the contract address, or the network.
+
 ## 0.2.0 (web page; the contract stays at v0.1.1)
 
 The contract on Studionet (`0xF319FDf761A71Eb81D8FD8bcaBC9d03e155270E5`) is **not** changed and not redeployed. `node scripts/verify-deployed-source.mjs` still shows the on-chain bytes equal to `deployed/rule_wind_tunnel.studionet-0xF319.py`. Everything below is in `web/`, `tests/browser/` and the docs.
