@@ -134,6 +134,13 @@ const CONTRACT_Q = `&contract=${CONTRACT}`;
   ok("first view: no script errors", c.errs.length === 0, c.errs.join(" | "));
   ok("first view: no key input anywhere, nothing stored", (await c.p.locator("input[type=password]").count()) === 0 && (await c.p.evaluate(() => Object.keys(localStorage).length)) === 0);
   ok("first view: no network call to any chain node", !c.rpc.methods.length);
+  await c.p.keyboard.press("Tab");
+  ok("keyboard: the skip link is on screen when focused", await c.p.evaluate(() => {
+    const a = document.activeElement;
+    if (!a || !a.classList.contains("skip")) return false;
+    const r = a.getBoundingClientRect();
+    return r.width > 40 && r.y >= 0 && r.y < 80 && r.height > 16;
+  }));
   // gates
   await c.p.click('#tunnel-svg .gate[data-case="4"]');
   ok("gate click: detail shows that case and each wording's verdict", /Case 5\./.test(await text(c.p, "#gate-detail")) && (await c.p.locator("#gate-detail .tag").count()) === 4);
@@ -143,6 +150,23 @@ const CONTRACT_Q = `&contract=${CONTRACT}`;
   ok("keyboard: arrow moves to the next gate and reads it", /Case 2\./.test(await text(c.p, "#gate-detail")) && (await c.p.evaluate(() => document.activeElement.dataset.case)) === "1");
   await c.p.keyboard.press("ArrowLeft");
   ok("keyboard: arrow left goes back", (await c.p.evaluate(() => document.activeElement.dataset.case)) === "0");
+  const contrast = await c.p.evaluate(() => {
+    const lum = rgb => {
+      const [r, g, b] = rgb.match(/\d+/g).map(Number).map(v => { const s = v / 255; return s <= 0.03928 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4; });
+      return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+    };
+    const ratio = (fg, bg) => { const L1 = Math.max(fg, bg), L2 = Math.min(fg, bg); return (L1 + 0.05) / (L2 + 0.05); };
+    const paint = (sel, against) => {
+      const el = document.querySelector(sel);
+      const fg = lum(getComputedStyle(el).color);
+      const host = against ? document.querySelector(against) : el;
+      let bg = getComputedStyle(host).backgroundColor;
+      if (!bg || bg === "transparent" || bg === "rgba(0, 0, 0, 0)") bg = getComputedStyle(document.body).backgroundColor;
+      return ratio(fg, lum(bg));
+    };
+    return { body: paint("body"), lede: paint(".lede", ".stage"), hint: paint("#measure .hint") };
+  });
+  ok("contrast: body text, the stage lede and hints clear 4.5 to 1", contrast.body >= 4.5 && contrast.lede >= 4.5 && contrast.hint >= 4.5, JSON.stringify(contrast));
   // table
   await c.p.click("details.table > summary");
   ok("table: one row per wording plus the intended row, all 8 cases", (await c.p.locator("#matrix tbody tr").count()) === 5 && (await c.p.locator("#matrix tbody tr:nth-child(2) td.v-C, #matrix tbody tr:nth-child(2) td.v-V, #matrix tbody tr:nth-child(2) td.v-U").count()) === 8);
@@ -170,6 +194,17 @@ const CONTRACT_Q = `&contract=${CONTRACT}`;
   await c.ctx.close();
 }
 {
+  const c = await newCase({ hasWallet: false, viewport: { width: 360, height: 780 } });
+  await c.open();
+  const dims = await c.p.evaluate(() => ({ page: document.documentElement.scrollWidth, view: document.documentElement.clientWidth, mark: document.querySelector(".mark").getBoundingClientRect().height }));
+  ok("mobile 360: the page does not scroll sideways and the wordmark stays one line", dims.page <= dims.view && dims.mark < 40, JSON.stringify(dims));
+  ok("mobile 360: the chart still says to swipe", await c.p.isVisible(".swipe") && /Swipe the chart/.test(await text(c.p, ".swipe")));
+  await c.p.locator("#measure").scrollIntoViewIfNeeded();
+  const form = await c.p.evaluate(() => document.getElementById("composer").getBoundingClientRect().width <= document.documentElement.clientWidth);
+  ok("mobile 360: the measure form fits the screen", form);
+  await c.ctx.close();
+}
+{
   const c = await newCase({ hasWallet: false, colorScheme: "dark" });
   await c.open();
   ok("dark scheme: paper turns dark and text stays readable", (await c.p.evaluate(() => getComputedStyle(document.body).backgroundColor)) === "rgb(10, 19, 25)" && c.errs.length === 0);
@@ -182,6 +217,8 @@ const CONTRACT_Q = `&contract=${CONTRACT}`;
   await c.open();
   ok("composer: starts with four wordings and eight cases", (await c.p.locator("#wordings .row").count()) === 4 && (await c.p.locator("#cases .row").count()) === 8);
   ok("composer: no problems are shown before anyone types", (await c.p.locator("#problems li").count()) === 0);
+  await c.p.focus("#f-label");
+  ok("keyboard: a focused field keeps a visible ring", (await c.p.evaluate(() => getComputedStyle(document.getElementById("f-label")).outlineStyle)) !== "none");
   await c.p.click("#ex1");
   ok("composer: the vague example fills every box and the page shows the id the contract will compute", (await c.p.inputValue("#f-label")) === "Refund rule v1 (vague)" && (await text(c.p, "#idline")).includes(V1_ID), await text(c.p, "#idline"));
   ok("composer: a complete pack shows no problems", (await c.p.locator("#problems li").count()) === 0);
@@ -234,6 +271,7 @@ const CONTRACT_Q = `&contract=${CONTRACT}`;
   await c.p.fill("#openid", "xyz");
   await c.p.click("#openform button");
   ok("open by id: a malformed id is explained", /64 characters/.test(await text(c.p, "#board-status")));
+  ok("open by id: the malformed-id error says how to fix it", /Paste the full id/.test(await text(c.p, "#board-status")));
   await c.p.fill("#openid", "3".repeat(64));
   await c.p.click("#openform button");
   ok("open by id: an unknown id is said to be unknown", await waitText(c.p, "#board-status", /No measurement with that id/));
@@ -436,6 +474,26 @@ async function ready(c) {
   await c.p.evaluate(() => { window.__w.chainId = "0x1"; });
   await c.p.click("#send");
   ok("send: if the wallet is on another network at send time, nothing is sent", await waitText(c.p, "#send-status", /another network/) && !(await c.p.evaluate(() => window.__reqs.some(r => r.method === "eth_sendTransaction"))));
+  await c.ctx.close();
+}
+
+{
+  const c = await newCase({ hasWallet: false, rpcInit: { page: { total: 0, items: [] }, reports: {} } });
+  await c.open(CONTRACT_Q);
+  ok("board empty: says nothing is measured yet and how to start", /Nothing has been measured yet/.test(await text(c.p, "#packs")) && /at least three wordings/.test(await text(c.p, "#packs")) && await c.p.isHidden("#compare"));
+  await c.ctx.close();
+}
+{
+  const c = await newCase({ wallet: { hash: H } });
+  await ready(c);
+  c.rpc.txScripts[H] = [tx("PENDING")];
+  await c.p.click("#send");
+  const reading = await c.p.waitForFunction(() => {
+    const note = document.getElementById("reading-note");
+    const elapsed = (document.getElementById("elapsed").textContent || "").trim();
+    return note && !note.hidden && /still reading each case/.test(note.textContent) && /^\d+:\d\d$/.test(elapsed) && document.getElementById("track").getAttribute("aria-busy") === "true";
+  }, null, { timeout: 8000 }).then(() => true).catch(() => false);
+  ok("send: while validators read, a timer runs and the page says to leave the tab open", reading);
   await c.ctx.close();
 }
 

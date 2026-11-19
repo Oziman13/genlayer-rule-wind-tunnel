@@ -11,7 +11,7 @@
 <script src="config.js"></script>
 </head>
 <body>
-<a class="sr" href="#read">Skip to the reading</a>
+<a class="skip" href="#read">Skip to the reading</a>
 
 <header class="top">
   <a class="mark" href="#top" aria-label="Rule Wind Tunnel, top of page">
@@ -34,6 +34,7 @@
 <section class="stage" aria-labelledby="h-stage">
   <div class="wrap">
     <div class="stage-head">
+      <p class="kicker">Test section</p>
       <h1 id="h-stage">Does your rule read the same way twice?</h1>
       <div>
         <p class="lede">Write one rule in four ways and give it eight cases. The validators answer every case once per wording, and you see where the readings agree and where they come apart.</p>
@@ -46,7 +47,10 @@
     </div>
   </div>
   <figure class="tunnel" aria-label="Test section">
-    <div class="tunnel-scroll wrap-bleed" id="tunnel" tabindex="0" role="region" aria-label="Test section chart, scrolls sideways on small screens"></div>
+    <div class="tunnel-plate">
+      <p class="tunnel-stamp" aria-hidden="true"><span>Airflow</span><span>Gates across · lines along</span></p>
+      <div class="tunnel-scroll wrap-bleed" id="tunnel" tabindex="0" role="region" aria-label="Test section chart, scrolls sideways on small screens"></div>
+    </div>
   </figure>
   <div class="wrap">
     <div class="stage-foot">
@@ -190,12 +194,13 @@
             <span id="account">No wallet connected.</span>
           </div>
           <button class="btn primary" type="submit" id="send" disabled>Measure on Studionet</button>
-          <ol class="track" id="track" aria-label="Progress of the measurement" hidden>
+          <ol class="track" id="track" aria-label="Progress of the measurement" aria-busy="false" hidden>
             <li data-t="0"><span class="dot"></span><span class="tl">Sign in your wallet</span></li>
             <li data-t="1"><span class="dot"></span><span class="tl">Send to the network</span></li>
             <li data-t="2"><span class="dot"></span><span class="tl">Validators read the cases</span><span class="elapsed" id="elapsed"></span></li>
             <li data-t="3"><span class="dot"></span><span class="tl">Result recorded</span></li>
           </ol>
+          <p class="reading-note" id="reading-note" hidden>The validators are still reading each case against every wording. Leave this tab open. A run usually takes one to three minutes, and the timer counts while they read.</p>
           <p class="status" id="send-status" role="status" hidden></p>
           <p class="status bad" id="recovery" hidden></p>
         </div>

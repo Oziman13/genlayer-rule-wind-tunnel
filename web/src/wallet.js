@@ -54,7 +54,7 @@ export async function connectWallet() {
   try {
     accounts = await provider().request({ method: "eth_requestAccounts" });
   } catch (e) {
-    if (isUserRejection(e)) throw new WalletError("USER_REJECTED", "The connection request was declined in the wallet.");
+    if (isUserRejection(e)) throw new WalletError("USER_REJECTED", "The connection request was declined in the wallet. Open the wallet and approve the connection, then try again.");
     throw e;
   }
   if (!Array.isArray(accounts) || !accounts.length) throw new WalletError("NO_ACCOUNT", "The wallet returned no account. Unlock it and try again.");

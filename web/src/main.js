@@ -69,7 +69,7 @@ function setBoundary(r) {
   $("boundary").innerHTML = rows.length ? rows.map(b => `<li data-case="${b.index}"><span class="no num">${b.index + 1}</span><div>
       <p class="case">${esc(b.text)}</p><p class="why">${esc(b.why)}</p>
       <div class="verdicts">${b.said.map(s => `<span><span class="tag s${WORDING_LETTERS.indexOf(s.wording) + 1}">${s.wording}</span>${VERDICT_WORD[s.verdict]}</span>`).join("")}</div></div></li>`).join("")
-    : `<li class="empty" style="display:block">No boundary cases. All ${r.pack.wordings.length} wordings agreed on every case, and the majority matched every intended verdict.</li>`;
+    : `<li class="empty" style="display:block">No boundary cases. All ${r.pack.wordings.length} wordings agreed on every case, and the majority matched every intended verdict. Nothing here needs a rewrite before you rely on this reading.</li>`;
 }
 
 const GLYPH = { C: "complies", V: "violates", U: "unclear" };
@@ -163,7 +163,7 @@ async function readJson(fn, args) {
   return raw;
 }
 
-function boardNote(html, cls = "") { const el = $("board-status"); el.hidden = !html; el.className = "status " + cls; el.innerHTML = html || ""; }
+function boardNote(html, cls = "") { const el = $("board-status"); el.hidden = !html; el.className = "status " + cls; el.innerHTML = html || ""; el.setAttribute("role", cls === "bad" ? "alert" : "status"); }
 
 function netState(cls, title) { const n = $("net"); n.className = "net " + cls; if (title) n.title = title; }
 
@@ -176,7 +176,7 @@ async function loadBoard() {
   }
   $("board-lead").textContent = "Every measurement is public. Open one to see its table.";
   let page;
-  try { page = JSON.parse(await readJson("get_packs_page", [0, 50])); } catch (e) { netState("is-down", "Could not reach Studionet just now."); boardNote("Could not read the board: " + esc(e.message || e), "bad"); return; }
+  try { page = JSON.parse(await readJson("get_packs_page", [0, 50])); } catch (e) { netState("is-down", "Could not reach Studionet just now."); boardNote("Could not read the board: " + esc(e.message || e) + " Reload the page once you are back online.", "bad"); return; }
   netState("is-live", "Connected: this page is reading GenLayer Studionet, a test network.");
   boardNote("");
   state.packs = (page.items || []).slice().reverse();
@@ -184,7 +184,7 @@ async function loadBoard() {
     const g = gradeInfo(p.grade);
     return `<li><a href="?pack=${esc(p.id)}" data-id="${esc(p.id)}"><span class="t">${esc(p.label)}</span><span class="g g-${esc(p.grade)}">${esc(g ? g.word : p.grade)} <span class="num">${score100(p.score_permille)}</span></span>
       <span class="m">${p.runs} ${p.runs === 1 ? "run" : "runs"}, latest ${esc(utc(p.at))}${p.previous ? ", revises " + esc(shortId(p.previous)) : ""}</span></a></li>`;
-  }).join("") : `<li class="empty" style="display:block;border-top:0">Nothing has been measured yet. Be the first: use the form below.</li>`;
+  }).join("") : `<li class="empty" style="display:block;border-top:0">Nothing has been measured yet. Be the first: use the form below. Name the rule, write at least three wordings, and add at least six cases.</li>`;
   const select = $("f-previous");
   const keep = select.value;
   select.innerHTML = `<option value="">No, this is a first version</option>` + state.packs.map(p => `<option value="${esc(p.id)}">${esc(p.label)} (${esc(gradeInfo(p.grade)?.word || p.grade)}, ${esc(shortId(p.id))})</option>`).join("");
@@ -211,13 +211,13 @@ function compareNote(html, cls = "") { $("compare-out").innerHTML = html ? `<p c
 
 async function runCompare(idA, idB) {
   if (!contract) return;
-  if (idA === idB) { compareNote("Pick two different measurements.", "bad"); return; }
+  if (idA === idB) { compareNote("Pick two different measurements. Change one of the two lists, then compare again.", "bad"); return; }
   compareNote("Reading both measurements…");
   let raw;
-  try { raw = await readJson("compare_json", [idA, idB]); } catch (e) { compareNote("Could not read the contract: " + esc(e.message || e), "bad"); return; }
-  if (raw === "NONE") { compareNote("One of these is not on this contract.", "bad"); return; }
+  try { raw = await readJson("compare_json", [idA, idB]); } catch (e) { compareNote("Could not read the contract: " + esc(e.message || e) + " Reload the page and compare again.", "bad"); return; }
+  if (raw === "NONE") { compareNote("One of these is not on this contract. Choose both rules from the lists, which only contain measurements stored here.", "bad"); return; }
   const c = parseCompare(raw);
-  if (!c) { compareNote("The contract returned something this page cannot read.", "bad"); return; }
+  if (!c) { compareNote("The contract returned something this page cannot read. Reload and try the same two rules again.", "bad"); return; }
   const rows = compareRows(c);
   const word = t => ({ better: "better", worse: "worse", same: "" }[t]);
   $("compare-out").innerHTML = `<p class="cmp-line">${esc(compareLine(c))}</p>
@@ -238,14 +238,14 @@ $("lineage").addEventListener("click", e => {
 });
 
 async function openPack(id, { scroll = true, quiet = false } = {}) {
-  if (!/^[0-9a-f]{64}$/.test(id)) { boardNote("A pack id is 64 characters, 0 to 9 and a to f.", "bad"); return false; }
-  if (!contract) { boardNote("No contract address is set for this page yet.", "bad"); return false; }
+  if (!/^[0-9a-f]{64}$/.test(id)) { boardNote("A pack id is 64 characters, 0 to 9 and a to f. Paste the full id, with nothing else in the box.", "bad"); return false; }
+  if (!contract) { boardNote("No contract address is set for this page yet. Open this page from a build that names the Studionet contract, then try the id again.", "bad"); return false; }
   boardNote("Reading the measurement…");
   let raw;
-  try { raw = await readJson("get_report_json", [id]); } catch (e) { boardNote("Could not read the contract: " + esc(e.message || e), "bad"); return false; }
-  if (raw === "NONE") { boardNote("No measurement with that id on this contract.", "bad"); return false; }
+  try { raw = await readJson("get_report_json", [id]); } catch (e) { boardNote("Could not read the contract: " + esc(e.message || e) + " Reload the page and open the id again.", "bad"); return false; }
+  if (raw === "NONE") { boardNote("No measurement with that id on this contract. Copy an id from the board above, or measure the rule first.", "bad"); return false; }
   const r = parseReport(raw);
-  if (!r) { boardNote("The contract returned something this page cannot read.", "bad"); return false; }
+  if (!r) { boardNote("The contract returned something this page cannot read. Reload the page. If it stays unreadable, the answer is not a measurement this page knows.", "bad"); return false; }
   boardNote("");
   show(r, "chain");
   if (!quiet) history.replaceState(null, "", "?pack=" + id + (query.get("contract") ? "&contract=" + query.get("contract") : ""));
@@ -413,8 +413,12 @@ let trackAt = -1, trackTimer = null, trackT0 = 0;
 function stopTimer() { if (trackTimer) { clearInterval(trackTimer); trackTimer = null; } }
 function setTrack(n, failed = false) {
   const ol = $("track");
-  if (n < 0) { ol.hidden = true; stopTimer(); $("elapsed").textContent = ""; trackAt = -1; return; }
+  const note = $("reading-note");
+  if (n < 0) { ol.hidden = true; ol.setAttribute("aria-busy", "false"); note.hidden = true; stopTimer(); $("elapsed").textContent = ""; trackAt = -1; return; }
   ol.hidden = false; trackAt = n;
+  const reading = n === 2 && !failed;
+  ol.setAttribute("aria-busy", reading ? "true" : "false");
+  note.hidden = !reading;
   [...ol.children].forEach((li, i) => { li.className = i < n ? "is-done" : i === n ? (failed ? "is-failed" : "is-now") : ""; });
   if (n === 2 && !failed) {
     if (!trackTimer) {
@@ -428,17 +432,17 @@ const failTrack = () => setTrack(Math.max(trackAt, 0), true);
 
 function progress(u) {
   if (u.stage === "submitted" || (u.stage === "status" && trackAt < 2)) setTrack(2);
-  if (u.stage === "submitted") status(`Sent. Transaction ${txLink(u.hash)}. The validators are reading your cases once per wording; this usually takes one to three minutes.`);
+  if (u.stage === "submitted") status(`Sent. Transaction ${txLink(u.hash)}. The validators are reading your cases once per wording; this usually takes one to three minutes. Leave this tab open until the result is recorded.`);
   else if (u.stage === "status") status(`Transaction ${txLink(u.hash)}: ${esc(u.status || "pending")}.`);
-  else if (u.stage === "network-hiccup") status("The network did not answer just now. Still watching.");
+  else if (u.stage === "network-hiccup") status("The network did not answer just now. Still watching. Leave this tab open; the page will ask again.");
 }
 
 function outcome(o, id) {
   if (o.kind !== "APPLIED" && o.kind !== "STILL_PENDING") failTrack();
   switch (o.kind) {
     case "APPLIED": return afterApplied(id);
-    case "REJECTED_BY_USER": return status(esc(o.message), "bad");
-    case "NOT_SENT": return status(esc(o.message), "bad");
+    case "REJECTED_BY_USER": return status(esc(o.message) + " Connect again when you are ready; nothing is waiting on the network.", "bad");
+    case "NOT_SENT": return status(esc(o.message) + " Fix the cause above, then measure again.", "bad");
     case "AMBIGUOUS": return status(esc(o.message) + " Reload the page to reconcile it.", "bad");
     case "REJECTED_BY_CONTRACT": return status(`The contract refused it (transaction ${txLink(o.hash)}). Usually the pack was measured less than five minutes ago, has already had five runs, or names an earlier version that is not on the board.`, "bad");
     case "NOT_APPLIED": return status(`The validators did not settle on a result (${esc(o.status)}). Nothing was recorded. This happens when the validators' models read the pack very differently (grades two or more steps apart), which is itself a sign the rule is unsteady: sharpen a wording or add cases, then try again.`, "bad");
@@ -465,7 +469,7 @@ $("composer").addEventListener("submit", async e => {
       onUpdate: progress,
     });
     await outcome(o, id);
-  } catch (err) { failTrack(); status("Something went wrong: " + esc(err.message || err), "bad"); }
+  } catch (err) { failTrack(); status("Something went wrong: " + esc(err.message || err) + " If you had already signed, reload the page to check whether the measurement was recorded.", "bad"); }
   finally { state.busy = false; refreshChecks(); }
 });
 
@@ -517,7 +521,7 @@ function links() {
   await recover();
   const want = (query.get("pack") || cfg.FIRST_PACK || "").toLowerCase();
   let opened = false;
-  if (want && contract) { $("gauge").innerHTML = `<p class="line">Reading the latest measurement from Studionet…</p>`; await loadBoard(); opened = await openPack(want, { scroll: false, quiet: !query.get("pack") }); }
+  if (want && contract) { $("gauge").innerHTML = `<p class="line">Reading the latest measurement from Studionet…</p><p class="line">The test section fills in when the contract answers.</p>`; await loadBoard(); opened = await openPack(want, { scroll: false, quiet: !query.get("pack") }); }
   else await loadBoard();
   if (!opened) show(parseReport(sample), "sample");
 })();

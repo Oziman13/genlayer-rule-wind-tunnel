@@ -8,7 +8,7 @@ Rule Wind Tunnel is a test rig for that. You submit a **pack**: three to five wo
 
 * `contracts/rule_wind_tunnel.py` — the Intelligent Contract (one Python file, no funds, no web access).
 * `web/` — a static page that reads the chain and sends measurements from your own wallet. No keys, no third-party requests, fonts self-hosted.
-* `tests/` — 174 direct-mode tests, 6 local-network tests, 181 browser/logic checks (76 logic, 105 page), and a mutation check of the contract.
+* `tests/` — 174 direct-mode tests, 6 local-network tests, 190 browser/logic checks (76 logic, 114 page), and a mutation check of the contract.
 * `fixtures/` — the demo packs used in the tests and in the live run (a vague refund rule and its revision).
 
 Status: **web page v0.2.0, contract v0.1.1 (unchanged), Studionet only.** What changed in the page since the first release is in [`CHANGELOG.md`](CHANGELOG.md). See [Live run](#live-run) and [What it does not show](#what-it-does-not-show).
